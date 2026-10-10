@@ -272,7 +272,7 @@ label.lbl{display:block;font-size:14px;font-weight:600;color:var(--label2);margi
 
     <section>
       <h2>Jobs</h2>
-      <p class="sub">Finished one? Tap it to add the money.</p>
+      <p class="sub" id="jobsSub">Finished one? Tap it to add the money.</p>
       <div class="jobs" id="jobs"></div>
     </section>
 
@@ -295,7 +295,7 @@ label.lbl{display:block;font-size:14px;font-weight:600;color:var(--label2);margi
    SETUP: paste the Web app URL from your Apps Script deployment here.
    ===================================================================== */
 const CONFIG = {
-  API_URL: 'https://script.google.com/macros/s/AKfycbx5ldifXgJppHIhWV0Ht-bl7fpuhQRY2rdvFqTAh77mbMae0TDaZHEUR07NtxkjFOvBdw/exec'
+  API_URL: 'https://script.google.com/macros/s/AKfycby-7kMYsPuIddM8lJdhWJJKF6J-xZiqaHnGVovQEEQvDbkAh2Mmj0yQU5-9WONSrxvdqg/exec'
 };
 
 /* ---------- tiny helpers ---------- */
@@ -371,7 +371,8 @@ const ERR = {
   locked: 'Too many wrong PINs. Try again in 10 minutes.',
   not_setup: 'The backend isn’t set up yet. Run setup() in Apps Script.',
   duplicate: 'You just did that one — nice! Give it a moment.',
-  daily_limit: 'That one’s already done today. Come back tomorrow!',
+  limit_reached: 'That one’s already done for now. It’ll be back soon!',
+  daily_limit: 'That one’s already done for now. It’ll be back soon!',
   unknown_job: 'That job isn’t available any more.',
   busy: 'The sheet is busy. Try again in a few seconds.',
   forbidden: 'Parents only.',
@@ -414,12 +415,13 @@ function renderSoundBtn(){
   b.setAttribute('aria-label', muted ? 'Sound off' : 'Sound on');
 }
 
-/* ---------- confetti ---------- */
+/* ---------- celebrations (rotating styles) ---------- */
 const fx = (() => {
   const c = $('#fx'), ctx = c.getContext && c.getContext('2d');
-  let w = 0, hh = 0, parts = [], raf = 0, rain = 0;
+  let w = 0, hh = 0, parts = [], raf = 0, spawners = [];
   const colors = ['#ff3b30', '#ff9500', '#ffcc00', '#34c759', '#5ac8fa', '#007aff', '#af52de', '#ff2d55'];
-  const emojis = ['💵', '💰', '⭐', '✨', '🎉'];
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const pick = arr => arr[(Math.random() * arr.length) | 0];
   function resize(){
     const dpr = Math.min(2, window.devicePixelRatio || 1);
     w = innerWidth; hh = innerHeight;
@@ -427,42 +429,104 @@ const fx = (() => {
     if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
   addEventListener('resize', resize); resize();
-  function add(x, y, a, speed, kind){
-    parts.push({ x, y, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed, rot: Math.random() * 6.28, vr: (Math.random() - .5) * .4,
-      size: 6 + Math.random() * 8, color: colors[(Math.random() * colors.length) | 0], kind,
-      emoji: emojis[(Math.random() * emojis.length) | 0], age: 0, ttl: 140 + Math.random() * 90 });
+
+  function add(o){
+    parts.push(Object.assign({ vx: 0, vy: 0, g: .28, drag: .992, rot: rnd(0, 6.28), vr: rnd(-.2, .2), size: rnd(6, 14),
+      color: pick(colors), kind: 'rect', emoji: '⭐', age: 0, ttl: rnd(140, 230), sway: 0, ph: rnd(0, 6.28), px: o.x, py: o.y }, o));
   }
   function cannon(x, y, spread, dir, n, power){
     for (let i = 0; i < n; i++) {
-      const r = Math.random();
-      add(x, y, dir + (Math.random() - .5) * spread, power * (.45 + Math.random() * .75), r < .16 ? 'emoji' : r < .6 ? 'rect' : 'circle');
+      const a = dir + (Math.random() - .5) * spread, s = power * rnd(.45, 1.2), r = Math.random();
+      add({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, kind: r < .16 ? 'emoji' : r < .6 ? 'rect' : 'circle', emoji: pick(['💵', '💰', '⭐', '✨', '🎉']) });
     }
   }
+  function burst(cx, cy, n, color){
+    for (let i = 0; i < n; i++) {
+      const a = Math.PI * 2 * i / n + rnd(-.1, .1), s = rnd(2, 9);
+      add({ x: cx, y: cy, vx: Math.cos(a) * s, vy: Math.sin(a) * s, g: .07, drag: .973, kind: 'spark', size: rnd(2, 3.6), ttl: rnd(55, 90), color: Math.random() < .25 ? '#fff' : color });
+    }
+  }
+  function ring(x, y, n, speed, emojis){
+    for (let i = 0; i < n; i++) {
+      const a = Math.PI * 2 * i / n, s = speed * rnd(.85, 1.1);
+      add({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, g: .06, drag: .985, kind: 'emoji', emoji: pick(emojis), size: rnd(8, 12), ttl: rnd(90, 140) });
+    }
+  }
+  function spawn(frames, fn){ if (reduced()) return; spawners.push({ left: frames, fn }); start(); }
+
   function loop(){
     ctx.clearRect(0, 0, w, hh);
-    if (rain > 0) { rain--; for (let i = 0; i < 2; i++) add(Math.random() * w, -20, Math.PI / 2 + (Math.random() - .5) * .4, 2 + Math.random() * 3, Math.random() < .5 ? 'emoji' : 'rect'); }
-    parts = parts.filter(p => p.age < p.ttl && p.y < hh + 60);
+    for (const sp of spawners) { sp.fn(); sp.left--; }
+    spawners = spawners.filter(sp => sp.left > 0);
+    parts = parts.filter(p => p.age < p.ttl && p.y < hh + 90 && p.y > -170);
     for (const p of parts) {
-      p.vy += .28; p.vx *= .992; p.vy *= .992; p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.age++;
-      ctx.save(); ctx.globalAlpha = Math.max(0, p.age > p.ttl - 30 ? (p.ttl - p.age) / 30 : 1);
-      ctx.translate(p.x, p.y); ctx.rotate(p.rot);
-      if (p.kind === 'emoji') { ctx.font = (p.size * 2.2) + 'px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(p.emoji, 0, 0); }
-      else { ctx.fillStyle = p.color; if (p.kind === 'rect') ctx.fillRect(-p.size / 2, -p.size / 3, p.size, p.size * .6); else { ctx.beginPath(); ctx.arc(0, 0, p.size / 3, 0, 6.28); ctx.fill(); } }
+      p.px = p.x; p.py = p.y;
+      p.vy += p.g; p.vx *= p.drag; p.vy *= p.drag;
+      p.x += p.vx + (p.sway ? Math.sin(p.age * .07 + p.ph) * p.sway : 0); p.y += p.vy; p.rot += p.vr; p.age++;
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, p.age > p.ttl - 30 ? (p.ttl - p.age) / 30 : 1);
+      if (p.kind === 'spark') {
+        ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = p.color; ctx.lineWidth = p.size; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(p.px, p.py); ctx.lineTo(p.x, p.y); ctx.stroke();
+      } else {
+        ctx.translate(p.x, p.y); ctx.rotate(p.kind === 'emoji' && p.sway ? Math.sin(p.age * .05 + p.ph) * .3 : p.rot);
+        if (p.kind === 'emoji') { ctx.font = (p.size * 2.2) + 'px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(p.emoji, 0, 0); }
+        else { ctx.fillStyle = p.color; if (p.kind === 'rect') ctx.fillRect(-p.size / 2, -p.size / 3, p.size, p.size * .6); else { ctx.beginPath(); ctx.arc(0, 0, p.size / 3, 0, 6.28); ctx.fill(); } }
+      }
       ctx.restore();
     }
-    if (parts.length || rain > 0) raf = requestAnimationFrame(loop); else { raf = 0; ctx.clearRect(0, 0, w, hh); }
+    if (parts.length || spawners.length) raf = requestAnimationFrame(loop); else { raf = 0; ctx.clearRect(0, 0, w, hh); }
   }
   const start = () => { if (ctx && !raf) raf = requestAnimationFrame(loop); };
+
+  const styles = {
+    // Cannons from the button and both corners, with a light money shower.
+    confetti(x, y, big, k){
+      cannon(x, y, 1.7, -Math.PI / 2, Math.round(90 * k), big ? 19 : 15);
+      setTimeout(() => { cannon(0, hh, 1.0, -Math.PI / 3, Math.round(60 * k), big ? 25 : 20); cannon(w, hh, 1.0, -2 * Math.PI / 3, Math.round(60 * k), big ? 25 : 20); start(); }, 180);
+      spawn(big ? 200 : 60, () => { for (let i = 0; i < 2; i++) add({ x: rnd(0, w), y: -20, vx: rnd(-.5, .5), vy: rnd(2, 5), kind: Math.random() < .5 ? 'emoji' : 'rect', emoji: pick(['💵', '💰', '⭐']) }); });
+    },
+    // Rockets bursting in the sky.
+    fireworks(x, y, big, k){
+      const n = big ? 7 : 4;
+      for (let i = 0; i < n; i++) setTimeout(() => { burst(rnd(w * .15, w * .85), rnd(hh * .12, hh * .5), Math.round(70 * k), pick(colors)); start(); }, reduced() ? 0 : i * 280);
+    },
+    // A proper cash shower.
+    moneyRain(x, y, big, k){
+      cannon(x, y, 1.2, -Math.PI / 2, Math.round(30 * k), 12);
+      spawn(big ? 260 : 130, () => { for (let i = 0; i < 3; i++) add({ x: rnd(0, w), y: -30, vy: rnd(2, 4), g: .04, drag: .998, kind: 'emoji', emoji: pick(['💵', '💰', '🪙', '💸']), size: rnd(7, 11), sway: rnd(.4, 1.4), ttl: 400 }); });
+    },
+    // Balloons drifting up from the bottom.
+    balloons(x, y, big, k){
+      cannon(x, y, 1.7, -Math.PI / 2, Math.round(40 * k), 14);
+      spawn(big ? 120 : 80, () => { if (Math.random() < .6) add({ x: rnd(0, w), y: hh + 40, vy: rnd(-5, -3), g: -.02, drag: .995, kind: 'emoji', emoji: pick(['🎈', '🎈', '🎈', '🎉']), size: rnd(11, 17), sway: rnd(.5, 1.6), ttl: 430 }); });
+    },
+    // Stars and sparkles bursting outward in rings.
+    starburst(x, y, big, k){
+      ring(x, y, Math.round(28 * k), 9, ['⭐', '✨', '🌟']);
+      burst(x, y, Math.round(60 * k), '#ffcc00');
+      setTimeout(() => { ring(x, y, Math.round(40 * k), 14, ['⭐', '✨', '💫', '🌟']); start(); }, 260);
+    }
+  };
+  let bag = [], last = '';
+  function nextStyle(){
+    if (!bag.length) {
+      bag = Object.keys(styles).sort(() => Math.random() - .5);
+      if (bag[bag.length - 1] === last && bag.length > 1) bag.unshift(bag.pop());
+    }
+    return (last = bag.pop());
+  }
   return {
     celebrate(x, y, big){
       if (!ctx) return;
-      const k = reduced() ? .25 : 1;
-      cannon(x, y, 1.7, -Math.PI / 2, Math.round(90 * k), big ? 19 : 15);
-      setTimeout(() => { cannon(0, hh, 1.0, -Math.PI / 3, Math.round(60 * k), big ? 25 : 20); cannon(w, hh, 1.0, -2 * Math.PI / 3, Math.round(60 * k), big ? 25 : 20); start(); }, 180);
-      if (big) [700, 1300, 1900].forEach(ms => setTimeout(() => { cannon(Math.random() * w, hh * .75, 1.4, -Math.PI / 2, Math.round(70 * k), 20); start(); }, ms));
-      if (!reduced()) rain = big ? 300 : 70;
+      const k = reduced() ? .25 : 1, style = nextStyle();
+      styles[style](x, y, big, k);
+      if (big && style !== 'fireworks') styles.fireworks(x, y, big, k); // milestones get extra fireworks
+      if (big && style === 'fireworks') styles.confetti(x, y, big, k);
       start();
-    }
+      return style;
+    },
+    styles: Object.keys(styles)
   };
 })();
 
@@ -519,15 +583,30 @@ function renderHero(){
 }
 
 function activeJobs(){ return S.state.jobs.filter(j => j.active); }
+const PERIOD = { day: ['today', 'Done today', 'Daily'], week: ['this week', 'Done this week', 'Weekly'], month: ['this month', 'Done this month', 'Monthly'] };
+function freqLabel(j){
+  if (j.period === 'day') return j.limit === 1 ? 'Once a day' : `${j.limit} times a day`;
+  return j.limit === 1 ? `Once a ${j.period}` : `${j.limit} times a ${j.period}`;
+}
 function renderJobs(){
   const box = $('#jobs'); box.replaceChildren();
-  const jobs = activeJobs();
-  if (!jobs.length) { box.append(h('div', { class: 'list', style: 'grid-column:1/-1' }, h('div', { class: 'empty' }, 'No jobs yet. A parent can add some from the Parents button.'))); return; }
+  const jobs = activeJobs(), counts = S.state.periodCounts || S.state.todayCounts || {};
+  const sub = $('#jobsSub');
+  if (!jobs.length) {
+    sub.textContent = '';
+    box.append(h('div', { class: 'list', style: 'grid-column:1/-1' }, h('div', { class: 'empty' }, 'No jobs yet. A parent can add some from the Parents button.')));
+    return;
+  }
+  let waiting = 0, upForGrabs = 0;
+  jobs.forEach(j => { const left = j.limit - (counts[j.id] || 0); if (left > 0) { waiting++; upForGrabs += left * j.value; } });
+  sub.textContent = waiting
+    ? `${waiting} job${waiting === 1 ? '' : 's'} waiting · ${money(Math.round(upForGrabs * 100) / 100)} up for grabs. Finished one? Tap it.`
+    : 'All done for now. Nice work!';
   jobs.forEach(j => {
-    const n = S.state.todayCounts[j.id] || 0, done = n >= j.maxPerDay;
-    const label = done ? 'Done today' : (j.maxPerDay > 1 ? `${n} of ${j.maxPerDay} today` : '');
+    const n = counts[j.id] || 0, done = n >= j.limit, p = PERIOD[j.period] || PERIOD.day;
+    const label = done ? p[1] : (j.limit > 1 ? `${n} of ${j.limit} ${p[0]}` : (j.period === 'day' ? '' : p[2]));
     const b = h('button', { class: 'job' + (done ? ' done' : ''), style: `--h:${hue(j.id)}`, disabled: done,
-      'aria-label': `${j.name}, ${money(j.value)}${done ? ', done today' : ''}`, onClick: () => openConfirm(j) },
+      'aria-label': `${j.name}, ${money(j.value)}${done ? ', ' + p[1].toLowerCase() : ''}`, onClick: () => openConfirm(j) },
       h('div', { class: 'bubble' }, j.emoji),
       h('div', { class: 'name' }, j.name),
       h('div', { class: 'row' }, h('span', { class: 'amt-pill' }, '+' + money(j.value)), h('span', { class: 'today' }, label)),
@@ -713,34 +792,45 @@ function adminJobs(){
   return h('div', {},
     h('div', { class: 'list' }, jobs.length ? jobs.map(j => h('button', { class: 'li' + (j.active ? '' : ' void'), style: 'width:100%;border:0;background:none;text-align:left;color:inherit', onClick: () => { A.editing = j; renderAdmin(); } },
       h('div', { class: 'em' }, j.emoji),
-      h('div', { class: 'txt' }, h('div', { class: 't' }, j.name), h('div', { class: 's' }, (j.active ? 'Up to ' : 'Hidden · up to ') + j.maxPerDay + ' per day')),
+      h('div', { class: 'txt' }, h('div', { class: 't' }, j.name), h('div', { class: 's' }, (j.active ? '' : 'Hidden · ') + freqLabel(j))),
       h('div', { class: 'v' }, money(j.value)))) : h('div', { class: 'empty' }, 'No jobs yet.')),
     h('div', { class: 'stack', style: 'margin-top:18px' }, h('button', { class: 'btn blue', onClick: () => { A.editing = null; renderAdmin(); } }, 'Add a job')));
 }
 
+const FREQ = [['day:1', 'Once a day'], ['day:2', '2 times a day'], ['day:3', '3 times a day'], ['day:4', '4 times a day'], ['day:5', '5 times a day'], ['week:1', 'Once a week'], ['month:1', 'Once a month']];
 function jobForm(job){
   const emoji = h('input', { class: 'field', value: job ? job.emoji : '⭐', maxlength: '8', 'aria-label': 'Emoji', style: 'font-size:28px;text-align:center;width:90px' });
   const name = h('input', { class: 'field', value: job ? job.name : '', maxlength: '40', placeholder: 'e.g. Water the plants', 'aria-label': 'Job name' });
   const value = h('input', { class: 'field', type: 'number', inputmode: 'decimal', step: '0.5', min: '0', max: '1000', value: job ? String(job.value) : '', placeholder: '5', 'aria-label': 'Amount in dollars' });
-  const max = h('select', { class: 'field', 'aria-label': 'Max times per day' }, [1, 2, 3, 4, 5].map(n => h('option', { value: String(n), selected: (job ? job.maxPerDay : 1) === n }, n === 1 ? 'Once a day' : n + ' times a day')));
-  const active = h('input', { type: 'checkbox', checked: job ? job.active : true, 'aria-label': 'Show this job' });
-  if (job ? job.active : true) active.checked = true;
+  const current = job ? `${job.period}:${job.limit}` : 'day:1';
+  const opts = FREQ.slice();
+  if (!opts.some(o => o[0] === current)) opts.push([current, freqLabel(job)]); // e.g. set by hand in the sheet
+  const freq = h('select', { class: 'field', 'aria-label': 'How often' }, opts.map(o => h('option', { value: o[0], selected: o[0] === current }, o[1])));
+  const active = h('input', { type: 'checkbox', 'aria-label': 'Show this job' });
+  active.checked = job ? job.active : true;
   const chips = h('div', { class: 'chips-row' }, EMOJIS.map(e => h('button', { type: 'button', class: 'chip', onClick: () => { emoji.value = e; } }, e)));
   const save = h('button', { class: 'btn blue', onClick: async () => {
     const v = parseFloat(value.value);
     if (!name.value.trim() || !(v >= 0)) { A.err = ERR.bad_job; renderAdmin(); return; }
-    const ok = await adminCall('saveJob', { job: { id: job ? job.id : undefined, emoji: emoji.value, name: name.value, value: v, maxPerDay: Number(max.value), active: active.checked } }, 'Saved');
+    const [period, limit] = freq.value.split(':');
+    const ok = await adminCall('saveJob', { job: { id: job ? job.id : undefined, emoji: emoji.value, name: name.value, value: v, limit: Number(limit), period, active: active.checked } }, 'Saved');
     if (ok) { A.editing = undefined; renderAdmin(); }
   } }, 'Save job');
+  const del = job ? h('button', { class: 'btn danger', onClick: async () => {
+    if (!confirm(`Delete “${job.name}”? Money already earned from it stays in the total. To just pause it, switch off “Show this job” instead.`)) return;
+    const ok = await adminCall('deleteJob', { id: job.id }, 'Deleted');
+    if (ok) { A.editing = undefined; renderAdmin(); }
+  } }, 'Delete job') : null;
   return h('div', { class: 'stack' },
     h('div', { style: 'display:flex;gap:12px;align-items:flex-end' },
       h('div', {}, h('label', { class: 'lbl' }, 'Emoji'), emoji),
       h('div', { style: 'flex:1' }, h('label', { class: 'lbl' }, 'Job'), name)),
     chips,
-    h('div', { class: 'two' }, h('div', {}, h('label', { class: 'lbl' }, 'Amount ($)'), value), h('div', {}, h('label', { class: 'lbl' }, 'How often'), max)),
+    h('div', { class: 'two' }, h('div', {}, h('label', { class: 'lbl' }, 'Amount ($)'), value), h('div', {}, h('label', { class: 'lbl' }, 'How often'), freq)),
     h('label', { class: 'switch' }, h('span', {}, 'Show this job'), active),
     save,
-    h('button', { class: 'btn plain', onClick: () => { A.editing = undefined; A.err = ''; renderAdmin(); } }, 'Cancel'));
+    h('button', { class: 'btn plain', onClick: () => { A.editing = undefined; A.err = ''; renderAdmin(); } }, 'Cancel'),
+    del);
 }
 
 function adminHistory(){
