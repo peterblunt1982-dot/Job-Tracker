@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="referrer" content="no-referrer">
 <meta name="robots" content="noindex, nofollow">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; connect-src https://script.google.com https://script.googleusercontent.com; manifest-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; connect-src https://script.google.com https://script.googleusercontent.com; manifest-src 'self'; base-uri 'none'; form-action 'none'">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-180.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -141,6 +141,18 @@ h2{font:700 22px/1.2 var(--round);margin-bottom:14px;letter-spacing:-.2px}
 .btn.danger{background:rgba(255,59,48,.14);color:var(--red)}
 .btn.small{padding:9px 16px;font-size:15px}
 
+/* ---------- Arcade tiles ---------- */
+.game{display:flex;align-items:center;gap:14px;width:100%;border:0;background:var(--fill);border-radius:24px;padding:14px 16px;text-align:left;color:var(--label)}
+.game:active:not(:disabled){transform:scale(.97)}
+.game:disabled{opacity:.5}
+.game .gi{width:58px;height:58px;border-radius:18px;display:grid;place-items:center;font-size:32px;background:var(--card);flex:none}
+.game .gt{flex:1;min-width:0}
+.game .gn{font:800 19px var(--round)}
+.game .gs{font-size:14px;color:var(--label2)}
+.game .gb{font:700 15px var(--round);color:var(--label2);text-align:right;white-space:nowrap}
+.badge{background:var(--blue);color:#fff;border-radius:999px;min-width:22px;height:22px;padding:0 7px;display:inline-grid;place-items:center;font-size:13px;font-weight:800}
+.badge[hidden]{display:none}
+
 /* ---------- Gate ---------- */
 .gate{min-height:100vh;display:grid;place-items:center;padding:24px}
 .gate-card{width:min(100%,400px);background:var(--card);border-radius:36px;box-shadow:var(--shadow);padding:36px 30px;text-align:center}
@@ -208,6 +220,7 @@ label.lbl{display:block;font-size:14px;font-weight:600;color:var(--label2);margi
     <div class="topbar-inner">
       <h1 id="title">Charlie’s iPhone fund</h1>
       <div class="actions">
+        <button id="arcadeBtn" class="pill-btn" aria-label="Arcade"><span>🎮 Arcade</span><span class="badge" id="tokBadge" hidden>0</span></button>
         <button id="soundBtn" class="icon-btn" aria-label="Sound on"></button>
         <button id="parentBtn" class="pill-btn" aria-label="Parent area"></button>
       </div>
@@ -265,6 +278,7 @@ label.lbl{display:block;font-size:14px;font-weight:600;color:var(--label2);margi
         <div class="chips">
           <div class="chip-stat"><b id="weekAmt">$0</b><span>this week</span></div>
           <div class="chip-stat"><b id="jobCount">0</b><span>jobs done</span></div>
+          <div class="chip-stat"><b id="tokChip">0</b><span>game tokens 🎟️</span></div>
         </div>
         <div class="miles" id="miles" aria-label="Milestones"></div>
       </div>
@@ -288,6 +302,7 @@ label.lbl{display:block;font-size:14px;font-weight:600;color:var(--label2);margi
 <div id="cele" aria-live="polite"><div class="box"><div class="amt"></div><div class="msg"></div><div class="sub2"></div></div></div>
 <div id="toast" role="status"></div>
 
+<script src="games.js"></script>
 <script>
 'use strict';
 
@@ -295,7 +310,7 @@ label.lbl{display:block;font-size:14px;font-weight:600;color:var(--label2);margi
    SETUP: paste the Web app URL from your Apps Script deployment here.
    ===================================================================== */
 const CONFIG = {
-  API_URL: 'https://script.google.com/macros/s/AKfycby-7kMYsPuIddM8lJdhWJJKF6J-xZiqaHnGVovQEEQvDbkAh2Mmj0yQU5-9WONSrxvdqg/exec'
+  API_URL: 'PASTE_YOUR_WEB_APP_URL_HERE'
 };
 
 /* ---------- tiny helpers ---------- */
@@ -378,6 +393,8 @@ const ERR = {
   forbidden: 'Parents only.',
   bad_job: 'Check the job name and amount.',
   bad_settings: 'Check the goal amount.',
+  no_tokens: 'You need a game token. Finish a job to earn one!',
+  unknown_game: 'That game isn’t available.',
   server_error: 'Something went wrong. Try again.'
 };
 const errText = e => ERR[e && e.code] || ERR.server_error;
@@ -554,6 +571,7 @@ function animateNumber(el, from, to, fmt, dur = 1500){
 
 /* ---------- rendering ---------- */
 const goalOf = () => S.state.settings.goalAmount;
+const tokenCount = () => (S.state && S.state.tokens) || 0;
 function renderHero(){
   const st = S.state, goal = goalOf(), total = st.total, p = Math.min(1, total / goal);
   $('#title').textContent = `${st.settings.childName}’s ${st.settings.goalName} fund`;
@@ -568,6 +586,9 @@ function renderHero(){
   $('#weekAmt').textContent = money(st.weekTotal);
   $('#jobCount').textContent = st.count.toLocaleString('en-AU');
   $('#phone').classList.toggle('complete', total >= goal);
+  const tk = tokenCount();
+  $('#tokChip').textContent = tk;
+  $('#tokBadge').textContent = tk; $('#tokBadge').hidden = tk < 1;
 
   requestAnimationFrame(() => requestAnimationFrame(() => {
     const shown = total > 0 ? Math.max(p, .02) : 0; // always show a little water once he's earned something
@@ -661,6 +682,7 @@ function openConfirm(job){
         window.scrollTo({ top: 0, behavior: reduced() ? 'auto' : 'smooth' });
         renderAll();
         celebrate(prev, r.state.total, r.result.value, x, y);
+        setTimeout(offerGame, 3300);
       } catch (e) {
         if (e.state) { S.state = e.state; renderAll(); }
         closeSheet(); toast(errText(e));
@@ -695,6 +717,55 @@ function openGoalSheet(){
       h('h3', {}, `${st.childName}, you did it!`),
       h('p', { class: 'lead' }, `You earned ${money(st.goalAmount)} for your ${st.goalName}. Go show a parent!`)),
     h('div', { class: 'stack' }, h('button', { class: 'btn blue', onClick: closeSheet }, 'Awesome!'))), { sticky: true });
+}
+
+/* ---------- arcade ---------- */
+const arcadeReady = () => typeof Arcade !== 'undefined';
+if (arcadeReady()) {
+  Arcade.configure({ getAudio: () => actx, muted: () => muted, unlock: unlockAudio, celebrate: (x, y, big) => fx.celebrate(x, y, big) });
+}
+function launchGame(id){
+  if (!arcadeReady()) return;
+  closeSheet();
+  const g = (S.state.games || {})[id] || { best: 0 };
+  Arcade.launch(id, {
+    best: g.best, tokens: tokenCount(), errText,
+    submit: async score => {
+      try {
+        const r = await api('play', { game: id, score });
+        S.state = r.state; S.lastFetch = Date.now(); renderAll();
+        return { best: r.result.best, isBest: r.result.isBest, tokens: r.state.tokens };
+      } catch (e) { if (e.state) { S.state = e.state; renderAll(); } throw e; }
+    }
+  });
+}
+function openArcade(){
+  if (!arcadeReady()) { toast('The games file is missing. Upload games.js next to index.html.'); return; }
+  openSheet(body => {
+    const t = tokenCount(), games = S.state.games || {};
+    body.append(
+      h('div', { class: 'center' }, h('div', { class: 'big-emoji' }, '🎮'), h('h3', {}, 'Arcade'),
+        h('p', { class: 'lead' }, t > 0 ? `You have ${t} game token${t === 1 ? '' : 's'}. Pick a game!` : 'Finish a job to earn a game token 🎟️')),
+      h('div', { class: 'stack' }, Arcade.DEFS.map(d => {
+        const best = (games[d.id] || {}).best || 0, m = Arcade.medalFor(d.id, best);
+        return h('button', { class: 'game', disabled: t < 1, onClick: () => launchGame(d.id) },
+          h('div', { class: 'gi' }, d.icon),
+          h('div', { class: 'gt' }, h('div', { class: 'gn' }, d.name), h('div', { class: 'gs' }, d.tagline)),
+          h('div', { class: 'gb' }, best > 0 ? `Best ${best} ${Arcade.MEDAL_ICON[m]}` : 'Not played'));
+      })),
+      h('div', { class: 'stack', style: 'margin-top:14px' }, h('button', { class: 'btn plain', onClick: closeSheet }, 'Close')));
+  });
+}
+function offerGame(){
+  if (sheet || !arcadeReady() || tokenCount() < 1) return;
+  const t = tokenCount();
+  openSheet(body => body.append(
+    h('div', { class: 'center' }, h('div', { class: 'big-emoji' }, '🎟️'), h('h3', {}, 'Bonus game unlocked!'),
+      h('p', { class: 'lead' }, t > 1 ? `You have ${t} game tokens.` : 'You earned a game token for that job.')),
+    h('div', { class: 'stack' },
+      h('button', { class: 'btn primary', onClick: () => launchGame(Arcade.DEFS[(Math.random() * Arcade.DEFS.length) | 0].id) }, '🎲 Surprise me!'),
+      h('button', { class: 'btn blue', onClick: openArcade }, 'Choose a game'),
+      h('button', { class: 'btn plain', onClick: closeSheet }, 'Save it for later'))));
 }
 
 /* ---------- gate (PIN / setup / retry) ---------- */
@@ -887,6 +958,7 @@ async function boot(){
 $('#soundBtn').addEventListener('click', () => { muted = !muted; ls.set('cj_mute', muted ? '1' : '0'); renderSoundBtn(); unlockAudio(); chime(false); });
 $('#parentBtn').innerHTML = ICON.lock + '<span>Parents</span>';
 $('#parentBtn').addEventListener('click', openParent);
+$('#arcadeBtn').addEventListener('click', openArcade);
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && S.pin && S.state && !sheet && Date.now() - S.lastFetch > 15000) refresh(false);
 });
