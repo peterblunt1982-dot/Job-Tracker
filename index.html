@@ -62,10 +62,10 @@ h2{font:700 22px/1.2 var(--round);margin-bottom:14px;letter-spacing:-.2px}
 .phone-wrap{position:relative;display:grid;place-items:center;padding:6px 8px}
 .phone-wrap::before{content:"";position:absolute;inset:12% 6%;border-radius:50%;
   background:radial-gradient(closest-side,rgba(10,132,255,.35),rgba(175,82,222,.18) 60%,transparent);filter:blur(26px)}
-#phone{position:relative;width:100%;max-width:230px;height:auto;overflow:visible;filter:drop-shadow(0 18px 26px rgba(0,0,0,.28))}
-#phone.complete{animation:glow 1.8s ease-in-out infinite alternate}
+#phone,#jar{position:relative;width:100%;max-width:230px;height:auto;overflow:visible;filter:drop-shadow(0 18px 26px rgba(0,0,0,.28))}
+#phone.complete,#jar.complete{animation:glow 1.8s ease-in-out infinite alternate}
 @keyframes glow{from{filter:drop-shadow(0 18px 26px rgba(0,0,0,.28))}to{filter:drop-shadow(0 0 34px rgba(255,204,0,.9))}}
-#liq{transition:transform 1.7s cubic-bezier(.22,.9,.25,1)}
+#liq,#jarLiq{transition:transform 1.7s cubic-bezier(.22,.9,.25,1)}
 .wave1{animation:slide 5.5s linear infinite}
 .wave2{animation:slide 8s linear infinite reverse}
 @keyframes slide{from{transform:translateX(0)}to{transform:translateX(-176px)}}
@@ -153,6 +153,27 @@ h2{font:700 22px/1.2 var(--round);margin-bottom:14px;letter-spacing:-.2px}
 .badge{background:var(--blue);color:#fff;border-radius:999px;min-width:22px;height:22px;padding:0 7px;display:inline-grid;place-items:center;font-size:13px;font-weight:800}
 .badge[hidden]{display:none}
 
+/* ---------- Avatars and profile picker ---------- */
+.av{display:block;border-radius:50%;overflow:hidden;flex:none}
+.av svg{display:block;width:100%;height:100%}
+.who-title{display:flex;align-items:center;gap:12px;min-width:0}
+.who-title h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#topAv .av{box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.picker{min-height:100vh;display:grid;place-items:center;padding:32px 20px}
+.picker-inner{width:min(100%,760px);text-align:center}
+.picker h1{font:800 clamp(32px,5.5vw,48px)/1.1 var(--round);letter-spacing:-1px;margin-bottom:8px}
+.picker .sub2{color:var(--label2);font-size:20px;margin-bottom:38px}
+.who-row{display:flex;gap:28px;justify-content:center;flex-wrap:wrap}
+.who{border:0;background:var(--card);border-radius:42px;box-shadow:var(--shadow);padding:30px 26px 26px;width:min(100%,300px);color:var(--label);transition:transform .2s cubic-bezier(.3,1.4,.5,1)}
+.who:active{transform:scale(.95)}
+.who .av{width:190px;height:190px;margin:0 auto 16px;box-shadow:0 16px 34px rgba(0,0,0,.16);animation:bob 4.5s ease-in-out infinite}
+.who:nth-child(2) .av{animation-delay:-2.2s}
+@keyframes bob{50%{transform:translateY(-6px)}}
+.who .wn{font:800 30px var(--round);letter-spacing:-.5px}
+.who .ws{color:var(--label2);font-size:17px;margin-top:2px;font-variant-numeric:tabular-nums}
+.who .bar{height:9px;border-radius:5px;background:var(--fill);margin-top:16px;overflow:hidden}
+.who .bar i{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,#5ac8fa,#007aff,#af52de)}
+
 /* ---------- Gate ---------- */
 .gate{min-height:100vh;display:grid;place-items:center;padding:24px}
 .gate-card{width:min(100%,400px);background:var(--card);border-radius:36px;box-shadow:var(--shadow);padding:36px 30px;text-align:center}
@@ -206,20 +227,29 @@ label.lbl{display:block;font-size:14px;font-weight:600;color:var(--label2);margi
   .topbar-inner{padding:12px 16px}
 }
 @media (prefers-reduced-motion: reduce){
-  .wave1,.wave2,#phone.complete{animation:none}
-  #liq{transition-duration:.01s}
+  .wave1,.wave2,#phone.complete,#jar.complete,.who .av{animation:none}
+  #liq,#jarLiq{transition-duration:.01s}
 }
 </style>
 </head>
 <body>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+  <linearGradient id="gFrame" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e6e8ec"/><stop offset=".45" stop-color="#9a9ca5"/><stop offset="1" stop-color="#d4d6db"/></linearGradient>
+  <linearGradient id="gIdle" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34343c"/><stop offset="1" stop-color="#17171c"/></linearGradient>
+  <linearGradient id="gLiquid" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5ac8fa"/><stop offset=".45" stop-color="#007aff"/><stop offset="1" stop-color="#af52de"/></linearGradient>
+  <linearGradient id="gLiquidJar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb3d9"/><stop offset=".5" stop-color="#ff6fb5"/><stop offset="1" stop-color="#a855f7"/></linearGradient>
+  <linearGradient id="gShine" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset=".38" stop-color="#fff" stop-opacity=".04"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient>
+</defs></svg>
 <div id="gate" class="gate" hidden></div>
+<div id="picker" class="picker" hidden></div>
 
 <div id="app" hidden>
   <header class="topbar">
     <div class="topbar-inner">
-      <h1 id="title">Charlie’s iPhone fund</h1>
+      <div class="who-title"><span id="topAv"></span><h1 id="title">Your fund</h1></div>
       <div class="actions">
+        <button id="switchBtn" class="pill-btn" aria-label="Switch profile"></button>
         <button id="arcadeBtn" class="pill-btn" aria-label="Arcade"><span>🎮 Arcade</span><span class="badge" id="tokBadge" hidden>0</span></button>
         <button id="soundBtn" class="icon-btn" aria-label="Sound on"></button>
         <button id="parentBtn" class="pill-btn" aria-label="Parent area"></button>
@@ -231,21 +261,7 @@ label.lbl{display:block;font-size:14px;font-weight:600;color:var(--label2);margi
     <section class="hero" aria-label="Progress">
       <div class="phone-wrap">
         <svg id="phone" viewBox="-6 -2 212 404" role="img" aria-label="An iPhone that fills up as money is saved">
-          <defs>
-            <linearGradient id="gFrame" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stop-color="#e6e8ec"/><stop offset=".45" stop-color="#9a9ca5"/><stop offset="1" stop-color="#d4d6db"/>
-            </linearGradient>
-            <linearGradient id="gIdle" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#34343c"/><stop offset="1" stop-color="#17171c"/>
-            </linearGradient>
-            <linearGradient id="gLiquid" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#5ac8fa"/><stop offset=".45" stop-color="#007aff"/><stop offset="1" stop-color="#af52de"/>
-            </linearGradient>
-            <linearGradient id="gShine" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset=".38" stop-color="#fff" stop-opacity=".04"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/>
-            </linearGradient>
-            <clipPath id="screenClip"><rect x="12" y="12" width="176" height="376" rx="30"/></clipPath>
-          </defs>
+          <defs><clipPath id="screenClip"><rect x="12" y="12" width="176" height="376" rx="30"/></clipPath></defs>
           <rect x="-3" y="86" width="3" height="30" rx="1.5" fill="#8d8f98"/>
           <rect x="-3" y="130" width="3" height="52" rx="1.5" fill="#8d8f98"/>
           <rect x="-3" y="194" width="3" height="52" rx="1.5" fill="#8d8f98"/>
@@ -268,6 +284,30 @@ label.lbl{display:block;font-size:14px;font-weight:600;color:var(--label2);margi
           </g>
           <rect x="68" y="22" width="64" height="19" rx="9.5" fill="#000"/>
           <rect x="72" y="378" width="56" height="4" rx="2" fill="#fff" opacity=".75"/>
+        </svg>
+        <svg id="jar" viewBox="-6 -2 212 404" role="img" aria-label="A jar that fills up as money is saved" hidden>
+          <defs><clipPath id="jarClip"><path d="M56 96H144Q172 96 172 124V338Q172 378 132 378H68Q28 378 28 338V124Q28 96 56 96Z"/></clipPath></defs>
+          <ellipse cx="100" cy="392" rx="82" ry="8" fill="rgba(0,0,0,.14)"/>
+          <path d="M56 96H144Q172 96 172 124V338Q172 378 132 378H68Q28 378 28 338V124Q28 96 56 96Z" style="fill:var(--fill)"/>
+          <g clip-path="url(#jarClip)">
+            <g id="jarLiq" style="transform:translateY(378px)">
+              <g transform="translate(28,0)">
+                <g class="wave2"><path d="M0 8 Q22 0 44 8 T88 8 T132 8 T176 8 T220 8 T264 8 T308 8 T352 8 T396 8 T440 8 V440 H0 Z" fill="url(#gLiquidJar)" opacity=".5"/></g>
+                <g class="wave1" transform="translate(0,5)"><path d="M0 8 Q22 0 44 8 T88 8 T132 8 T176 8 T220 8 T264 8 T308 8 T352 8 T396 8 T440 8 V440 H0 Z" fill="url(#gLiquidJar)"/></g>
+              </g>
+            </g>
+            <rect x="42" y="116" width="12" height="190" rx="6" fill="#fff" opacity=".3"/>
+            <circle cx="48" cy="326" r="6" fill="#fff" opacity=".3"/>
+          </g>
+          <path d="M56 96H144Q172 96 172 124V338Q172 378 132 378H68Q28 378 28 338V124Q28 96 56 96Z" fill="none" style="stroke:var(--label2);opacity:.45" stroke-width="4"/>
+          <rect x="46" y="80" width="108" height="18" rx="9" style="fill:var(--fill);stroke:var(--label2);stroke-opacity:.4" stroke-width="3"/>
+          <rect x="40" y="44" width="120" height="42" rx="14" fill="#e0a458"/>
+          <rect x="40" y="44" width="120" height="14" rx="7" fill="#f3c27e"/>
+          <path d="M62 62V82M82 62V82M102 62V82M122 62V82M142 62V82" stroke="rgba(0,0,0,.12)" stroke-width="4" stroke-linecap="round"/>
+          <text id="jarPct" x="100" y="246" text-anchor="middle" font-size="42" font-weight="800" fill="#fff"
+            style="font-family:ui-rounded,-apple-system,Helvetica,sans-serif;paint-order:stroke" stroke="rgba(0,0,0,.28)" stroke-width="4">0%</text>
+          <text x="100" y="272" text-anchor="middle" font-size="13" font-weight="700" fill="#fff" stroke="rgba(0,0,0,.25)" stroke-width="3"
+            style="font-family:-apple-system,Helvetica,sans-serif;paint-order:stroke">saved</text>
         </svg>
       </div>
 
@@ -310,7 +350,7 @@ label.lbl{display:block;font-size:14px;font-weight:600;color:var(--label2);margi
    SETUP: paste the Web app URL from your Apps Script deployment here.
    ===================================================================== */
 const CONFIG = {
-  API_URL: 'https://script.google.com/macros/s/AKfycbxVtW_g9Hk9q2k4PhVP4gQfudFs28isEywMWTKO_RWNHvxJ47uCHTkEtEGbgDhbzRzTLg/exec'
+  API_URL: 'PASTE_YOUR_WEB_APP_URL_HERE'
 };
 
 /* ---------- tiny helpers ---------- */
@@ -353,14 +393,25 @@ function when(ms){
   return df.format(d) + ', ' + tf.format(d);
 }
 
+const AVATAR_SVG = {
+  capybara: `<svg viewBox="0 0 200 200" aria-hidden="true"><rect width="200" height="200" fill="#bfe9d6"/><circle cx="34" cy="38" r="40" fill="#d3f4e5"/><circle cx="176" cy="172" r="52" fill="#a6dec5"/><path d="M18 200 Q24 160 62 156 H138 Q176 160 182 200Z" fill="#b97d4a"/><ellipse cx="45" cy="74" rx="12" ry="9" fill="#a56b3b" transform="rotate(-25 45 74)"/><ellipse cx="46" cy="75" rx="6" ry="4.5" fill="#7b4a29" transform="rotate(-25 46 75)"/><ellipse cx="155" cy="74" rx="12" ry="9" fill="#a56b3b" transform="rotate(25 155 74)"/><ellipse cx="154" cy="75" rx="6" ry="4.5" fill="#7b4a29" transform="rotate(25 154 75)"/><rect x="34" y="64" width="132" height="100" rx="38" fill="#c98f5b"/><path d="M34 120 H166 V126 Q166 164 128 164 H72 Q34 164 34 126Z" fill="#d7a173"/><rect x="58" y="104" width="84" height="48" rx="24" fill="#e3b88e"/><rect x="76" y="98" width="48" height="28" rx="14" fill="#5a3825"/><ellipse cx="90" cy="106" rx="8" ry="3.5" fill="#9a6c52" opacity=".7"/><circle cx="89" cy="116" r="3" fill="#2f1d12" opacity=".6"/><circle cx="111" cy="116" r="3" fill="#2f1d12" opacity=".6"/><path d="M100 126 V134" stroke="#5a3825" stroke-width="4" stroke-linecap="round"/><path d="M86 134 Q100 146 114 134" stroke="#5a3825" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="64" cy="92" r="7" fill="#2b1a10"/><circle cx="66.3" cy="89.4" r="2.5" fill="#fff"/><circle cx="136" cy="92" r="7" fill="#2b1a10"/><circle cx="138.3" cy="89.4" r="2.5" fill="#fff"/><ellipse cx="50" cy="114" rx="9" ry="6" fill="#f08a7a" opacity=".5"/><ellipse cx="150" cy="114" rx="9" ry="6" fill="#f08a7a" opacity=".5"/><circle cx="100" cy="56" r="19" fill="#ffb627"/><circle cx="93" cy="49" r="5.5" fill="#ffe08a" opacity=".75"/><path d="M100 38 Q112 27 125 34 Q115 45 100 38Z" fill="#4caf50"/></svg>`,
+  cat: `<svg viewBox="0 0 200 200" aria-hidden="true"><rect width="200" height="200" fill="#f9d3e6"/><circle cx="168" cy="34" r="38" fill="#fde4f0"/><circle cx="26" cy="176" r="52" fill="#f3bcd7"/><ellipse cx="100" cy="208" rx="72" ry="48" fill="#a9b3c4"/><path d="M42 90 L50 32 L96 62Z" fill="#b9c2d0" stroke="#b9c2d0" stroke-width="12" stroke-linejoin="round"/><path d="M158 90 L150 32 L104 62Z" fill="#b9c2d0" stroke="#b9c2d0" stroke-width="12" stroke-linejoin="round"/><path d="M57 72 L59 44 L80 60Z" fill="#f4a7c3" stroke="#f4a7c3" stroke-width="5" stroke-linejoin="round"/><path d="M143 72 L141 44 L120 60Z" fill="#f4a7c3" stroke="#f4a7c3" stroke-width="5" stroke-linejoin="round"/><ellipse cx="100" cy="108" rx="65" ry="57" fill="#b9c2d0"/><path d="M100 53 V71 M85 57 L87 71 M115 57 L113 71" stroke="#8b96a8" stroke-width="6" stroke-linecap="round"/><ellipse cx="100" cy="129" rx="27" ry="20" fill="#f3f5f9"/><ellipse cx="73" cy="106" rx="9.5" ry="12" fill="#2b2a3a"/><circle cx="76" cy="101.5" r="3.6" fill="#fff"/><circle cx="71" cy="111" r="1.8" fill="#fff"/><ellipse cx="127" cy="106" rx="9.5" ry="12" fill="#2b2a3a"/><circle cx="130" cy="101.5" r="3.6" fill="#fff"/><circle cx="125" cy="111" r="1.8" fill="#fff"/><path d="M93.5 121 H106.5 L100 128.5Z" fill="#f48fb1" stroke="#f48fb1" stroke-width="3" stroke-linejoin="round"/><path d="M100 129 V134 M100 134 Q93 141 86 136 M100 134 Q107 141 114 136" stroke="#6b5b73" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M50 124 L24 119 M50 133 L24 140 M150 124 L176 119 M150 133 L176 140" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".9"/><ellipse cx="58" cy="128" rx="10" ry="6.5" fill="#f48fb1" opacity=".5"/><ellipse cx="142" cy="128" rx="10" ry="6.5" fill="#f48fb1" opacity=".5"/><g transform="translate(142 46) rotate(12)"><path d="M0 0 L-17 -10 L-17 10Z M0 0 L17 -10 L17 10Z" fill="#ff7eb6" stroke="#ff7eb6" stroke-width="4" stroke-linejoin="round"/><circle r="5.5" fill="#ff5fa2"/></g></svg>`
+};
+function avatarEl(kind, size, name){
+  const el = h('span', { class: 'av', style: `width:${size}px;height:${size}px`, role: 'img', 'aria-label': name ? `${name}’s avatar` : 'avatar' });
+  const initial = String(name || '?').charAt(0).toUpperCase().replace(/[^A-Z0-9]/g, '?');
+  el.innerHTML = AVATAR_SVG[kind] || `<svg viewBox="0 0 200 200" aria-hidden="true"><rect width="200" height="200" fill="#c7d2fe"/><text x="100" y="128" text-anchor="middle" font-size="90" font-weight="800" fill="#4338ca" font-family="sans-serif">${initial}</text></svg>`;
+  return el;
+}
 const ICON = {
+  swap: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h11l-3-3M17 17H6l3 3"/></svg>',
   lock: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
   on: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/></svg>',
   off: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>'
 };
 
 /* ---------- state ---------- */
-const S = { pin: ls.get('cj_pin'), parentPin: null, state: null, lastFetch: 0, shownTotal: null, shownPct: 0 };
+const S = { pin: ls.get('cj_pin'), profile: null, profiles: null, parentPin: null, state: null, lastFetch: 0, shownTotal: null, shownPct: 0 };
 let muted = ls.get('cj_mute') === '1';
 
 /* ---------- API ---------- */
@@ -371,7 +422,7 @@ async function api(action, payload = {}, pin = S.pin){
   let res;
   try {
     // No custom headers => a "simple" request, so the browser skips CORS preflight (Apps Script can't answer one).
-    res = await fetch(CONFIG.API_URL, { method: 'POST', body: JSON.stringify({ action, pin, ...payload }), redirect: 'follow', signal: ctrl.signal, credentials: 'omit' });
+    res = await fetch(CONFIG.API_URL, { method: 'POST', body: JSON.stringify({ action, pin, profile: action === 'profiles' ? undefined : S.profile, ...payload }), redirect: 'follow', signal: ctrl.signal, credentials: 'omit' });
   } catch { throw new ApiError('network'); }
   finally { clearTimeout(timer); }
   let data;
@@ -393,6 +444,7 @@ const ERR = {
   forbidden: 'Parents only.',
   bad_job: 'Check the job name and amount.',
   bad_settings: 'Check the goal amount.',
+  unknown_profile: 'That profile wasn’t found. Pick again.',
   no_tokens: 'You need a game token. Finish a job to earn one!',
   unknown_game: 'That game isn’t available.',
   server_error: 'Something went wrong. Try again.'
@@ -572,13 +624,26 @@ function animateNumber(el, from, to, fmt, dur = 1500){
 /* ---------- rendering ---------- */
 const goalOf = () => S.state.settings.goalAmount;
 const tokenCount = () => (S.state && S.state.tokens) || 0;
+function resetLiquid(){
+  [['liq', 388], ['jarLiq', 378]].forEach(([id, y]) => {
+    const el = $('#' + id); el.style.transition = 'none'; el.style.transform = `translateY(${y}px)`;
+    void el.getBoundingClientRect(); el.style.transition = '';
+  });
+}
 function renderHero(){
   const st = S.state, goal = goalOf(), total = st.total, p = Math.min(1, total / goal);
-  $('#title').textContent = `${st.settings.childName}’s ${st.settings.goalName} fund`;
-  $('#savedLabel').textContent = `Saved for the ${st.settings.goalName}`;
+  const name = (st.profile && st.profile.name) || st.settings.childName;
+  if (S.shownTotal == null) resetLiquid(); // fresh profile: start from an empty phone/jar
+  const jar = st.settings.goalShape === 'jar';
+  $('#phone').hidden = jar; $('#jar').hidden = !jar;
+  $('#title').textContent = `${name}’s ${st.settings.goalName} fund`;
+  $('#topAv').replaceChildren(avatarEl(st.profile && st.profile.avatar, 44, name));
+  $('#savedLabel').textContent = 'Saved so far';
   const from = S.shownTotal == null ? 0 : S.shownTotal;
   animateNumber($('#money'), from, total, money);
-  animateNumber($('#phonePct'), S.shownPct, p * 100, v => (v > 0 && v < 10 ? (Math.round(v * 10) / 10) : Math.floor(v + 1e-9)) + '%');
+  const pctFmt = v => (v > 0 && v < 10 ? (Math.round(v * 10) / 10) : Math.floor(v + 1e-9)) + '%';
+  animateNumber($('#phonePct'), S.shownPct, p * 100, pctFmt);
+  animateNumber($('#jarPct'), S.shownPct, p * 100, pctFmt);
   S.shownTotal = total; S.shownPct = p * 100;
 
   const left = Math.max(0, goal - total);
@@ -586,13 +651,15 @@ function renderHero(){
   $('#weekAmt').textContent = money(st.weekTotal);
   $('#jobCount').textContent = st.count.toLocaleString('en-AU');
   $('#phone').classList.toggle('complete', total >= goal);
+  $('#jar').classList.toggle('complete', total >= goal);
   const tk = tokenCount();
   $('#tokChip').textContent = tk;
   $('#tokBadge').textContent = tk; $('#tokBadge').hidden = tk < 1;
 
   requestAnimationFrame(() => requestAnimationFrame(() => {
-    const shown = total > 0 ? Math.max(p, .02) : 0; // always show a little water once he's earned something
+    const shown = total > 0 ? Math.max(p, .02) : 0; // always show a little water once they've earned something
     $('#liq').style.transform = `translateY(${388 - 392 * shown}px)`;
+    $('#jarLiq').style.transform = `translateY(${378 - 302 * shown}px)`;
   }));
 
   const miles = $('#miles'); miles.replaceChildren();
@@ -713,9 +780,9 @@ function openGoalSheet(){
   const st = S.state.settings;
   openSheet(body => body.append(
     h('div', { class: 'center' },
-      h('div', { class: 'big-emoji' }, '📱'),
+      h('div', { class: 'big-emoji' }, st.goalShape === 'jar' ? '🎉' : '📱'),
       h('h3', {}, `${st.childName}, you did it!`),
-      h('p', { class: 'lead' }, `You earned ${money(st.goalAmount)} for your ${st.goalName}. Go show a parent!`)),
+      h('p', { class: 'lead' }, `You reached your ${money(st.goalAmount)} ${st.goalName} goal! Go show a parent!`)),
     h('div', { class: 'stack' }, h('button', { class: 'btn blue', onClick: closeSheet }, 'Awesome!'))), { sticky: true });
 }
 
@@ -770,7 +837,7 @@ function offerGame(){
 
 /* ---------- gate (PIN / setup / retry) ---------- */
 function showGate(opts = {}){
-  $('#app').hidden = true;
+  $('#app').hidden = true; $('#picker').hidden = true;
   const g = $('#gate'); g.hidden = false; g.replaceChildren();
   if (opts.setup) {
     g.append(h('div', { class: 'gate-card' }, h('div', { class: 'big-emoji' }, '🛠️'), h('h1', {}, 'Almost ready'),
@@ -851,7 +918,7 @@ function renderAdmin(){
   const tabs = h('div', { class: 'seg', role: 'group' }, ['Jobs', 'History', 'Goal'].map(t =>
     h('button', { 'aria-pressed': String(A.tab === t), onClick: () => { A.tab = t; A.editing = undefined; A.err = ''; renderAdmin(); } }, t)));
   body.replaceChildren(
-    h('div', { class: 'admin-head' }, h('h3', {}, 'Parent area'), h('button', { class: 'btn plain small', onClick: closeSheet }, 'Done')),
+    h('div', { class: 'admin-head' }, h('h3', {}, 'Parent area · ' + S.state.settings.childName), h('button', { class: 'btn plain small', onClick: closeSheet }, 'Done')),
     tabs,
     A.tab === 'Jobs' ? adminJobs() : A.tab === 'History' ? adminHistory() : adminGoal(),
     h('p', { class: 'err', role: 'alert' }, A.err));
@@ -922,45 +989,98 @@ function adminGoal(){
   const child = h('input', { class: 'field', value: s.childName, maxlength: '30', 'aria-label': 'Name' });
   const goal = h('input', { class: 'field', value: s.goalName, maxlength: '30', 'aria-label': 'Goal name' });
   const amt = h('input', { class: 'field', type: 'number', inputmode: 'decimal', min: '1', max: '100000', value: String(s.goalAmount), 'aria-label': 'Goal amount' });
+  const shape = h('select', { class: 'field', 'aria-label': 'Picture' }, [['phone', '📱 iPhone that fills up'], ['jar', '🫙 Jar that fills up']].map(([v, l]) => h('option', { value: v, selected: s.goalShape === v }, l)));
   return h('div', { class: 'stack' },
     h('div', {}, h('label', { class: 'lbl' }, 'Name'), child),
     h('div', { class: 'two' }, h('div', {}, h('label', { class: 'lbl' }, 'Saving for'), goal), h('div', {}, h('label', { class: 'lbl' }, 'Goal amount ($)'), amt)),
-    h('button', { class: 'btn blue', onClick: () => adminCall('saveSettings', { settings: { childName: child.value, goalName: goal.value, goalAmount: parseFloat(amt.value) } }, 'Saved') }, 'Save goal'),
+    h('div', {}, h('label', { class: 'lbl' }, 'Progress picture'), shape),
+    h('button', { class: 'btn blue', onClick: () => adminCall('saveSettings', { settings: { childName: child.value, goalName: goal.value, goalAmount: parseFloat(amt.value), goalShape: shape.value } }, 'Saved') }, 'Save goal'),
     h('hr', { style: 'border:0;border-top:.5px solid var(--sep);width:100%;margin:10px 0' }),
-    h('button', { class: 'btn danger', onClick: () => { if (confirm('Forget the PIN on this iPad? It will ask for it again.')) { ls.del('cj_pin'); ls.del('cj_state'); location.reload(); } } }, 'Lock this iPad'));
+    h('button', { class: 'btn danger', onClick: () => { if (confirm('Forget the PIN on this iPad? It will ask for it again.')) { ls.del('cj_pin'); ls.del('cj_profiles'); location.reload(); } } }, 'Lock this iPad'));
 }
 
 /* ---------- boot ---------- */
-function showApp(){ $('#gate').hidden = true; $('#app').hidden = false; }
+function showApp(){ $('#gate').hidden = true; $('#picker').hidden = true; $('#app').hidden = false; }
+
+function showPicker(){
+  $('#gate').hidden = true; $('#app').hidden = true;
+  const pk = $('#picker'); pk.hidden = false; pk.replaceChildren();
+  const tiles = (S.profiles || []).map(p => {
+    const pct = p.goalAmount > 0 ? Math.min(100, Math.max(0, p.total / p.goalAmount * 100)) : 0;
+    return h('button', { class: 'who', 'aria-label': `${p.name}, ${money(p.total)} saved`, onClick: () => selectProfile(p.id) },
+      avatarEl(p.avatar, 190, p.name),
+      h('div', { class: 'wn' }, p.name),
+      h('div', { class: 'ws' }, `${money(p.total)} saved`),
+      h('div', { class: 'bar' }, h('i', { style: `width:${pct.toFixed(1)}%` })));
+  });
+  pk.append(h('div', { class: 'picker-inner' }, h('h1', {}, 'Who’s saving today?'), h('p', { class: 'sub2' }, 'Tap your picture'), h('div', { class: 'who-row' }, tiles)));
+}
+
+function authProblem(e){
+  if (e.code === 'bad_pin') { ls.del('cj_pin'); ls.del('cj_profiles'); S.pin = null; S.profile = null; showGate('The PIN has changed. Enter the new one.'); return true; }
+  if (e.code === 'locked' || e.code === 'not_setup') { showGate({ retry: true, msg: errText(e) }); return true; }
+  return false;
+}
+
+async function loadProfiles(){
+  try {
+    const r = await api('profiles');
+    S.profiles = r.profiles;
+    ls.set('cj_profiles', JSON.stringify(r.profiles));
+    if (!S.profile) showPicker();
+  } catch (e) {
+    if (authProblem(e)) return;
+    if (!S.profiles) showGate({ retry: true, msg: errText(e) }); else toast(errText(e));
+  }
+}
+
+async function selectProfile(id){
+  unlockAudio();
+  S.profile = id; S.state = null; S.shownTotal = null; S.shownPct = 0;
+  await refresh(true); // on failure refresh() shows a message and returns to the picker
+}
+
+function switchProfile(){
+  closeSheet();
+  S.profile = null; S.parentPin = null; S.state = null;
+  if (S.profiles) showPicker();
+  loadProfiles();
+}
+
 async function refresh(initial){
   try {
     const r = await api('state');
     S.state = r.state; S.lastFetch = Date.now();
-    ls.set('cj_state', JSON.stringify(r.state));
     showApp(); renderAll();
+    return true;
   } catch (e) {
-    if (e.code === 'bad_pin') { ls.del('cj_pin'); ls.del('cj_state'); S.pin = null; return showGate('The PIN has changed. Enter the new one.'); }
-    if (e.code === 'locked' || e.code === 'not_setup') return showGate({ retry: true, msg: errText(e) });
-    if (!S.state) return showGate({ retry: true, msg: errText(e) });
-    if (!initial) toast(errText(e));
+    if (authProblem(e)) return false;
+    toast(errText(e));
+    if (!S.state) { S.profile = null; if (S.profiles) showPicker(); }
+    return false;
   }
 }
 async function boot(){
   if (CONFIG.API_URL.includes('PASTE_')) return showGate({ setup: true });
   if (!S.pin) return showGate();
-  if (!S.state) {
-    const cached = ls.get('cj_state');
-    if (cached) { try { S.state = JSON.parse(cached); showApp(); renderAll(); } catch { S.state = null; } }
+  if (!S.profiles) {
+    const cached = ls.get('cj_profiles');
+    if (cached) { try { S.profiles = JSON.parse(cached); } catch { S.profiles = null; } }
   }
-  await refresh(true);
+  if (S.profiles && !S.profile) showPicker();
+  await loadProfiles();
 }
 
 $('#soundBtn').addEventListener('click', () => { muted = !muted; ls.set('cj_mute', muted ? '1' : '0'); renderSoundBtn(); unlockAudio(); chime(false); });
 $('#parentBtn').innerHTML = ICON.lock + '<span>Parents</span>';
+$('#switchBtn').innerHTML = ICON.swap + '<span>Switch</span>';
+$('#switchBtn').addEventListener('click', switchProfile);
 $('#parentBtn').addEventListener('click', openParent);
 $('#arcadeBtn').addEventListener('click', openArcade);
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && S.pin && S.state && !sheet && Date.now() - S.lastFetch > 15000) refresh(false);
+  if (document.visibilityState !== 'visible' || !S.pin || sheet) return;
+  if (S.profile && S.state && Date.now() - S.lastFetch > 15000) refresh(false);
+  else if (!S.profile && S.profiles) loadProfiles();
 });
 renderSoundBtn();
 boot();
