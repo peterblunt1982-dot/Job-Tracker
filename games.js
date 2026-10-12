@@ -1,4 +1,4 @@
-/* Charliejobs Arcade: four short games, no assets, no network.
+/* Job Tracker Arcade: four short games, no assets, no network.
    Each game runs on a fixed 480 x 760 canvas that is scaled to fit the screen. */
 (function () {
   'use strict';

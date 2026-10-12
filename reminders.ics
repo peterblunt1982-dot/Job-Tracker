@@ -1,15 +1,15 @@
 BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//Charliejobs//Reminders//EN
+PRODID:-//Job Tracker//Reminders//EN
 CALSCALE:GREGORIAN
 BEGIN:VEVENT
-UID:charliejobs-daily-reminder@charliejobs
+UID:jobtracker-daily-reminder@jobtracker
 DTSTAMP:20261010T000000Z
 DTSTART:20261012T160000
 DTEND:20261012T161500
 RRULE:FREQ=DAILY
 SUMMARY:💰 Check your jobs!
-DESCRIPTION:See what jobs you can do today and get closer to your iPhone. Open Charliejobs.
+DESCRIPTION:See what jobs you can do today and get closer to your goal. Open Job Tracker.
 TRANSP:TRANSPARENT
 BEGIN:VALARM
 ACTION:DISPLAY

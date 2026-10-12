@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Charliejobs">
+<meta name="apple-mobile-web-app-title" content="Job Tracker">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="referrer" content="no-referrer">
 <meta name="robots" content="noindex, nofollow">
@@ -15,7 +15,7 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-180.png">
 <link rel="manifest" href="manifest.webmanifest">
-<title>Charliejobs</title>
+<title>Job Tracker</title>
 <style>
 :root{
   --bg:#f2f2f7; --card:#ffffff; --label:#1c1c1e; --label2:#6c6c70; --fill:rgba(120,120,128,.12);
@@ -173,6 +173,16 @@ h2{font:700 22px/1.2 var(--round);margin-bottom:14px;letter-spacing:-.2px}
 .who .ws{color:var(--label2);font-size:17px;margin-top:2px;font-variant-numeric:tabular-nums}
 .who .bar{height:9px;border-radius:5px;background:var(--fill);margin-top:16px;overflow:hidden}
 .who .bar i{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,#5ac8fa,#007aff,#af52de)}
+
+/* ---------- PIN screen ---------- */
+.gate-card .av{margin:0 auto 14px;box-shadow:0 10px 26px rgba(0,0,0,.16)}
+.wordmark{font:800 15px var(--round);letter-spacing:.4px;text-transform:uppercase;color:var(--label2);margin-bottom:14px}
+.pin-row{background:var(--fill);border-radius:22px;padding:16px;display:grid;gap:10px}
+.pin-row .top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.pin-row .nm{font:800 18px var(--round)}
+.pin-row .st{font-size:14px;font-weight:700}
+.pin-row .st.ok{color:var(--green-text)}
+.pin-row .st.no{color:var(--orange)}
 
 /* ---------- Gate ---------- */
 .gate{min-height:100vh;display:grid;place-items:center;padding:24px}
@@ -350,7 +360,7 @@ label.lbl{display:block;font-size:14px;font-weight:600;color:var(--label2);margi
    SETUP: paste the Web app URL from your Apps Script deployment here.
    ===================================================================== */
 const CONFIG = {
-  API_URL: 'https://script.google.com/macros/s/AKfycbzv1U8btgfTZJjYCiR0VdjcmGaAHCJufhJKyv9XSM6C4abH2ICjSecHJKQRi0EQRvW5/exec'
+  API_URL: 'PASTE_YOUR_WEB_APP_URL_HERE'
 };
 
 /* ---------- tiny helpers ---------- */
@@ -411,7 +421,7 @@ const ICON = {
 };
 
 /* ---------- state ---------- */
-const S = { pin: ls.get('cj_pin'), profile: null, profiles: null, parentPin: null, state: null, lastFetch: 0, shownTotal: null, shownPct: 0 };
+const S = { onPin: false, pin: null, role: null, profile: null, profiles: null, parentPin: null, state: null, lastFetch: 0, shownTotal: null, shownPct: 0 };
 let muted = ls.get('cj_mute') === '1';
 
 /* ---------- API ---------- */
@@ -433,7 +443,7 @@ async function api(action, payload = {}, pin = S.pin){
 const ERR = {
   network: 'Can’t reach the sheet. Check the Wi-Fi and try again.',
   bad_response: 'Something went wrong talking to the sheet. Try again.',
-  bad_pin: 'That PIN isn’t right.',
+  bad_pin: 'That PIN isn’t right. Try again.',
   locked: 'Too many wrong PINs. Try again in 10 minutes.',
   not_setup: 'The backend isn’t set up yet. Run setup() in Apps Script.',
   duplicate: 'You just did that one — nice! Give it a moment.',
@@ -444,6 +454,10 @@ const ERR = {
   forbidden: 'Parents only.',
   bad_job: 'Check the job name and amount.',
   bad_settings: 'Check the goal amount.',
+  no_pin_set: 'This profile doesn’t have a PIN yet. A parent needs to sign in with the parent PIN and set one.',
+  pin_in_use: 'That PIN is already used by someone else. Pick a different one.',
+  bad_pin_format: 'Kids’ PINs are 4 to 12 digits. The parent PIN is 6 to 12 digits.',
+  bad_target: 'That profile wasn’t found.',
   unknown_profile: 'That profile wasn’t found. Pick again.',
   no_tokens: 'You need a game token. Finish a job to earn one!',
   unknown_game: 'That game isn’t available.',
@@ -837,7 +851,7 @@ function offerGame(){
 
 /* ---------- gate (PIN / setup / retry) ---------- */
 function showGate(opts = {}){
-  $('#app').hidden = true; $('#picker').hidden = true;
+  S.onPin = false; $('#app').hidden = true; $('#picker').hidden = true;
   const g = $('#gate'); g.hidden = false; g.replaceChildren();
   if (opts.setup) {
     g.append(h('div', { class: 'gate-card' }, h('div', { class: 'big-emoji' }, '🛠️'), h('h1', {}, 'Almost ready'),
@@ -849,19 +863,37 @@ function showGate(opts = {}){
       h('p', {}, opts.msg || ERR.network), h('button', { class: 'btn blue', style: 'width:100%', onClick: () => boot() }, 'Try again')));
     return;
   }
-  const input = h('input', { class: 'field pin', type: 'password', inputmode: 'numeric', autocomplete: 'off', maxlength: '12', placeholder: 'Enter PIN', 'aria-label': 'PIN' });
-  const err = h('p', { class: 'err', role: 'alert' }, typeof opts === 'string' ? opts : (opts.msg || ''));
+  showPicker();
+}
+
+/* ---------- PIN screen (after picking a profile) ---------- */
+function showPin(p, msg){
+  S.onPin = true; $('#app').hidden = true; $('#picker').hidden = true;
+  const g = $('#gate'); g.hidden = false; g.replaceChildren();
+  const input = h('input', { class: 'field pin', type: 'password', inputmode: 'numeric', autocomplete: 'off', maxlength: '12', placeholder: 'Enter PIN', 'aria-label': `${p.name}’s PIN` });
+  const err = h('p', { class: 'err', role: 'alert' }, msg || '');
   const go = h('button', { class: 'btn blue', style: 'width:100%;margin-top:16px', onClick: submit }, 'Unlock');
   async function submit(){
+    unlockAudio();
     const pin = input.value.trim();
-    if (!/^\d{6,12}$/.test(pin)) { err.textContent = 'Enter your 6 to 12 digit PIN.'; return; }
+    if (!/^\d{4,12}$/.test(pin)) { err.textContent = 'Enter your PIN (4 to 12 digits).'; return; }
     go.disabled = true; go.textContent = 'Checking…'; err.textContent = '';
-    try { await api('state', {}, pin); S.pin = pin; ls.set('cj_pin', pin); await boot(); }
-    catch (e) { err.textContent = errText(e); go.disabled = false; go.textContent = 'Unlock'; input.select(); }
+    S.profile = p.id; S.state = null; S.shownTotal = null; S.shownPct = 0;
+    try {
+      const r = await api('state', {}, pin);
+      S.pin = pin; S.role = r.role; S.parentPin = r.role === 'parent' ? pin : null;
+      S.state = r.state; S.lastFetch = Date.now();
+      showApp(); renderAll();
+    } catch (e) {
+      S.profile = null; S.pin = null; S.role = null;
+      input.value = '';
+      err.textContent = errText(e); go.disabled = false; go.textContent = 'Unlock'; input.focus();
+    }
   }
   input.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
-  g.append(h('div', { class: 'gate-card' }, h('div', { class: 'big-emoji' }, '📱'), h('h1', {}, 'Charliejobs'),
-    h('p', {}, 'Enter the PIN to see your progress.'), input, err, go));
+  g.append(h('div', { class: 'gate-card' }, avatarEl(p.avatar, 120, p.name), h('h1', {}, `Hi ${p.name}!`),
+    h('p', {}, 'Enter your PIN to open your jobs.'), input, err, go,
+    h('button', { class: 'btn plain', style: 'width:100%;margin-top:10px', onClick: () => showPicker() }, 'Back')));
   setTimeout(() => input.focus(), 50);
 }
 
@@ -876,7 +908,7 @@ function openParent(){
   const go = h('button', { class: 'btn blue', onClick: submit }, 'Continue');
   async function submit(){
     const pin = input.value.trim();
-    if (!/^\d{6,12}$/.test(pin)) { err.textContent = 'Enter your 6 to 12 digit PIN.'; return; }
+    if (!/^\d{6,12}$/.test(pin)) { err.textContent = 'Enter the parent PIN (6 to 12 digits).'; return; }
     go.disabled = true; go.textContent = 'Checking…'; err.textContent = '';
     try {
       const r = await api('state', {}, pin);
@@ -884,6 +916,7 @@ function openParent(){
       S.parentPin = pin; S.state = r.state; openAdmin();
     } catch (e) {
       if (e.code === 'locked') { closeSheet(); toast(errText(e)); return; }
+      if (e.code === 'no_pin_set') e.code = 'bad_pin';
       err.textContent = errText(e); go.disabled = false; go.textContent = 'Continue';
     }
   }
@@ -915,12 +948,12 @@ async function adminCall(action, payload, okMsg){
 
 function renderAdmin(){
   const body = sheet.body;
-  const tabs = h('div', { class: 'seg', role: 'group' }, ['Jobs', 'History', 'Goal'].map(t =>
+  const tabs = h('div', { class: 'seg', role: 'group' }, ['Jobs', 'History', 'Goal', 'PINs'].map(t =>
     h('button', { 'aria-pressed': String(A.tab === t), onClick: () => { A.tab = t; A.editing = undefined; A.err = ''; renderAdmin(); } }, t)));
   body.replaceChildren(
     h('div', { class: 'admin-head' }, h('h3', {}, 'Parent area · ' + S.state.settings.childName), h('button', { class: 'btn plain small', onClick: closeSheet }, 'Done')),
     tabs,
-    A.tab === 'Jobs' ? adminJobs() : A.tab === 'History' ? adminHistory() : adminGoal(),
+    A.tab === 'Jobs' ? adminJobs() : A.tab === 'History' ? adminHistory() : A.tab === 'Goal' ? adminGoal() : adminPins(),
     h('p', { class: 'err', role: 'alert' }, A.err));
 }
 
@@ -994,55 +1027,65 @@ function adminGoal(){
     h('div', {}, h('label', { class: 'lbl' }, 'Name'), child),
     h('div', { class: 'two' }, h('div', {}, h('label', { class: 'lbl' }, 'Saving for'), goal), h('div', {}, h('label', { class: 'lbl' }, 'Goal amount ($)'), amt)),
     h('div', {}, h('label', { class: 'lbl' }, 'Progress picture'), shape),
-    h('button', { class: 'btn blue', onClick: () => adminCall('saveSettings', { settings: { childName: child.value, goalName: goal.value, goalAmount: parseFloat(amt.value), goalShape: shape.value } }, 'Saved') }, 'Save goal'),
-    h('hr', { style: 'border:0;border-top:.5px solid var(--sep);width:100%;margin:10px 0' }),
-    h('button', { class: 'btn danger', onClick: () => { if (confirm('Forget the PIN on this iPad? It will ask for it again.')) { ls.del('cj_pin'); ls.del('cj_profiles'); location.reload(); } } }, 'Lock this iPad'));
+    h('button', { class: 'btn blue', onClick: () => adminCall('saveSettings', { settings: { childName: child.value, goalName: goal.value, goalAmount: parseFloat(amt.value), goalShape: shape.value } }, 'Saved') }, 'Save goal'));
+}
+
+function adminPins(){
+  const pins = S.state.pins || {};
+  const rows = [{ key: 'parent', label: 'Parent PIN', min: 6 }].concat((S.profiles || []).map(p => ({ key: p.id, label: `${p.name}’s PIN`, min: 4 })));
+  return h('div', { class: 'stack' },
+    h('p', { class: 'sub', style: 'margin:-4px 0 4px' }, 'Everyone has their own PIN. A child’s PIN opens only their profile; the parent PIN opens any. Kids’ PINs are 4 to 12 digits, the parent PIN 6 to 12, and all must be different.'),
+    rows.map(r => {
+      const a = h('input', { class: 'field', type: 'password', inputmode: 'numeric', autocomplete: 'off', maxlength: '12', placeholder: 'New PIN', 'aria-label': `New ${r.label}` });
+      const b = h('input', { class: 'field', type: 'password', inputmode: 'numeric', autocomplete: 'off', maxlength: '12', placeholder: 'Repeat it', 'aria-label': `Repeat new ${r.label}` });
+      const save = h('button', { class: 'btn blue small', onClick: async () => {
+        const re = r.min === 6 ? /^\d{6,12}$/ : /^\d{4,12}$/;
+        if (!re.test(a.value)) { A.err = ERR.bad_pin_format; renderAdmin(); return; }
+        if (a.value !== b.value) { A.err = 'The two PINs don’t match.'; renderAdmin(); return; }
+        const next = a.value;
+        const ok = await adminCall('setPin', { target: r.key, newPin: next }, 'PIN saved');
+        if (ok && r.key === 'parent') { S.parentPin = next; if (S.role === 'parent') S.pin = next; }
+      } }, 'Save PIN');
+      return h('div', { class: 'pin-row' },
+        h('div', { class: 'top' }, h('div', { class: 'nm' }, r.label), h('div', { class: 'st ' + (pins[r.key] ? 'ok' : 'no') }, pins[r.key] ? '✓ PIN set' : 'No PIN yet')),
+        h('div', { class: 'two' }, a, b), save);
+    }));
 }
 
 /* ---------- boot ---------- */
-function showApp(){ $('#gate').hidden = true; $('#picker').hidden = true; $('#app').hidden = false; }
+function showApp(){ S.onPin = false; $('#gate').hidden = true; $('#picker').hidden = true; $('#app').hidden = false; }
 
 function showPicker(){
-  $('#gate').hidden = true; $('#app').hidden = true;
+  S.onPin = false; $('#gate').hidden = true; $('#app').hidden = true;
   const pk = $('#picker'); pk.hidden = false; pk.replaceChildren();
-  const tiles = (S.profiles || []).map(p => {
-    const pct = p.goalAmount > 0 ? Math.min(100, Math.max(0, p.total / p.goalAmount * 100)) : 0;
-    return h('button', { class: 'who', 'aria-label': `${p.name}, ${money(p.total)} saved`, onClick: () => selectProfile(p.id) },
-      avatarEl(p.avatar, 190, p.name),
-      h('div', { class: 'wn' }, p.name),
-      h('div', { class: 'ws' }, `${money(p.total)} saved`),
-      h('div', { class: 'bar' }, h('i', { style: `width:${pct.toFixed(1)}%` })));
-  });
-  pk.append(h('div', { class: 'picker-inner' }, h('h1', {}, 'Who’s saving today?'), h('p', { class: 'sub2' }, 'Tap your picture'), h('div', { class: 'who-row' }, tiles)));
+  const tiles = (S.profiles || []).map(p =>
+    h('button', { class: 'who', 'aria-label': p.name, onClick: () => { unlockAudio(); showPin(p); } },
+      avatarEl(p.avatar, 190, p.name), h('div', { class: 'wn' }, p.name)));
+  pk.append(h('div', { class: 'picker-inner' }, h('div', { class: 'wordmark' }, 'Job Tracker'), h('h1', {}, 'Who’s saving today?'), h('p', { class: 'sub2' }, 'Tap your picture'), h('div', { class: 'who-row' }, tiles)));
 }
 
 function authProblem(e){
-  if (e.code === 'bad_pin') { ls.del('cj_pin'); ls.del('cj_profiles'); S.pin = null; S.profile = null; showGate('The PIN has changed. Enter the new one.'); return true; }
-  if (e.code === 'locked' || e.code === 'not_setup') { showGate({ retry: true, msg: errText(e) }); return true; }
+  if (e.code === 'bad_pin' || e.code === 'no_pin_set') { toast('Your PIN changed. Please sign in again.'); switchProfile(); return true; }
+  if (e.code === 'locked') { toast(errText(e)); switchProfile(); return true; }
+  if (e.code === 'not_setup') { showGate({ retry: true, msg: errText(e) }); return true; }
   return false;
 }
 
 async function loadProfiles(){
   try {
-    const r = await api('profiles');
+    const r = await api('profiles', {}, null);
     S.profiles = r.profiles;
     ls.set('cj_profiles', JSON.stringify(r.profiles));
-    if (!S.profile) showPicker();
+    if (!S.profile && !S.onPin) showPicker();
   } catch (e) {
-    if (authProblem(e)) return;
     if (!S.profiles) showGate({ retry: true, msg: errText(e) }); else toast(errText(e));
   }
 }
 
-async function selectProfile(id){
-  unlockAudio();
-  S.profile = id; S.state = null; S.shownTotal = null; S.shownPct = 0;
-  await refresh(true); // on failure refresh() shows a message and returns to the picker
-}
-
+/** Back to the "who's saving?" screen. Forgets the PIN so the next person has to enter theirs. */
 function switchProfile(){
   closeSheet();
-  S.profile = null; S.parentPin = null; S.state = null;
+  S.profile = null; S.parentPin = null; S.pin = null; S.role = null; S.state = null;
   if (S.profiles) showPicker();
   loadProfiles();
 }
@@ -1055,14 +1098,12 @@ async function refresh(initial){
     return true;
   } catch (e) {
     if (authProblem(e)) return false;
-    toast(errText(e));
-    if (!S.state) { S.profile = null; if (S.profiles) showPicker(); }
+    if (!initial) toast(errText(e));
     return false;
   }
 }
 async function boot(){
   if (CONFIG.API_URL.includes('PASTE_')) return showGate({ setup: true });
-  if (!S.pin) return showGate();
   if (!S.profiles) {
     const cached = ls.get('cj_profiles');
     if (cached) { try { S.profiles = JSON.parse(cached); } catch { S.profiles = null; } }
@@ -1077,10 +1118,13 @@ $('#switchBtn').innerHTML = ICON.swap + '<span>Switch</span>';
 $('#switchBtn').addEventListener('click', switchProfile);
 $('#parentBtn').addEventListener('click', openParent);
 $('#arcadeBtn').addEventListener('click', openArcade);
+let hiddenAt = 0;
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState !== 'visible' || !S.pin || sheet) return;
-  if (S.profile && S.state && Date.now() - S.lastFetch > 15000) refresh(false);
-  else if (!S.profile && S.profiles) loadProfiles();
+  if (document.visibilityState === 'hidden') { hiddenAt = Date.now(); return; }
+  if (!S.profile) { if (S.profiles) loadProfiles(); return; }
+  // If the iPad was put down for 5+ minutes, go back to the picker so the next person must enter their own PIN.
+  if (hiddenAt && Date.now() - hiddenAt > 5 * 60 * 1000) { toast('Locked. Pick your profile.'); switchProfile(); return; }
+  if (S.state && !sheet && Date.now() - S.lastFetch > 15000) refresh(false);
 });
 renderSoundBtn();
 boot();

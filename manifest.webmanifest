@@ -1,6 +1,6 @@
 {
-  "name": "Charliejobs",
-  "short_name": "Charliejobs",
+  "name": "Job Tracker",
+  "short_name": "Job Tracker",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f2f2f7",
