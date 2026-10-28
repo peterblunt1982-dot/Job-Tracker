@@ -62,13 +62,12 @@ h2{font:700 22px/1.2 var(--round);margin-bottom:14px;letter-spacing:-.2px}
 .phone-wrap{position:relative;display:grid;place-items:center;padding:6px 8px}
 .phone-wrap::before{content:"";position:absolute;inset:12% 6%;border-radius:50%;
   background:radial-gradient(closest-side,rgba(10,132,255,.35),rgba(175,82,222,.18) 60%,transparent);filter:blur(26px)}
-#phone,#jar{position:relative;width:100%;max-width:230px;height:auto;overflow:visible;filter:drop-shadow(0 18px 26px rgba(0,0,0,.28))}
-#phone.complete,#jar.complete{animation:glow 1.8s ease-in-out infinite alternate}
+#phone,#jar,#ipad{position:relative;width:100%;max-width:230px;height:auto;overflow:visible;filter:drop-shadow(0 18px 26px rgba(0,0,0,.28))}
+#phone.complete,#jar.complete,#ipad.complete{animation:glow 1.8s ease-in-out infinite alternate}
 @keyframes glow{from{filter:drop-shadow(0 18px 26px rgba(0,0,0,.28))}to{filter:drop-shadow(0 0 34px rgba(255,204,0,.9))}}
-#liq,#jarLiq{transition:transform 1.7s cubic-bezier(.22,.9,.25,1)}
-.wave1{animation:slide 5.5s linear infinite}
-.wave2{animation:slide 8s linear infinite reverse}
-@keyframes slide{from{transform:translateX(0)}to{transform:translateX(-176px)}}
+#liq,#ipadLiq,#jarLiq{transition:transform 1.8s cubic-bezier(.22,.9,.25,1)}
+.fallbill{animation:billfall 1.15s cubic-bezier(.35,0,.65,1) both}
+@keyframes billfall{0%{transform:translateY(0);opacity:0}12%{opacity:1}80%{opacity:1}100%{transform:translateY(var(--fall,200px));opacity:0}}
 
 .stats{min-width:0}
 .saved-label{color:var(--label2);font-weight:600;font-size:17px}
@@ -97,7 +96,7 @@ h2{font:700 22px/1.2 var(--round);margin-bottom:14px;letter-spacing:-.2px}
   display:flex;flex-direction:column;gap:14px;min-height:178px;transition:transform .16s cubic-bezier(.3,1.4,.5,1),opacity .3s;position:relative}
 .job:active:not(:disabled){transform:scale(.95)}
 .bubble{width:68px;height:68px;border-radius:22px;display:grid;place-items:center;font-size:38px;
-  background:hsl(var(--h) 90% 55% / .17)}
+  background:hsla(var(--h),90%,55%,.17)}
 .job .name{font:700 20px/1.2 var(--round);letter-spacing:-.2px}
 .job .row{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:8px}
 .amt-pill{font:800 20px var(--round);color:var(--green-text);background:rgba(52,199,89,.16);padding:5px 14px;border-radius:999px}
@@ -152,6 +151,30 @@ h2{font:700 22px/1.2 var(--round);margin-bottom:14px;letter-spacing:-.2px}
 .game .gb{font:700 15px var(--round);color:var(--label2);text-align:right;white-space:nowrap}
 .badge{background:var(--blue);color:#fff;border-radius:999px;min-width:22px;height:22px;padding:0 7px;display:inline-grid;place-items:center;font-size:13px;font-weight:800}
 .badge[hidden]{display:none}
+
+/* ---------- Streak badges ---------- */
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(176px,1fr));gap:14px}
+.bcard{border:0;background:var(--card);border-radius:28px;box-shadow:var(--shadow);padding:16px 12px 16px;text-align:center;color:var(--label);display:flex;flex-direction:column;align-items:center;gap:4px;transition:transform .16s cubic-bezier(.3,1.4,.5,1)}
+.bcard:active{transform:scale(.96)}
+.bcard .bs{width:104px}
+.bcard .bn{font:800 17px var(--round);margin-top:2px}
+.bcard .bl{font-size:14px;color:var(--label2);font-weight:600;min-height:20px}
+.bcard .bl b{color:#ff7a1a}
+.bcard .bar{height:8px;border-radius:4px;background:var(--fill);width:100%;overflow:hidden;margin-top:6px}
+.bcard .bar i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,#ffb347,#ff7a1a)}
+.bcard .bt{font-size:13px;color:var(--label2);margin-top:2px}
+.badge-svg{display:block;width:100%;height:auto;overflow:visible}
+.tw{animation:tw 2.2s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes tw{50%{transform:scale(.35);opacity:.25}}
+.fire{font:800 14px var(--round);color:#ff7a1a;background:rgba(255,122,26,.14);padding:4px 10px;border-radius:999px;white-space:nowrap}
+.brow{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.job.done .brow .fire{margin-right:40px}
+.tiers{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:6px 0 4px}
+.tiers .t{background:var(--fill);border-radius:22px;padding:12px 8px 10px;text-align:center}
+.tiers .t .bs{width:92px;margin:0 auto 4px}
+.tiers .t .tn{font:800 15px var(--round)}
+.tiers .t .td{font-size:13px;color:var(--label2)}
+.sheet .bigbadge{width:min(62vw,220px);margin:0 auto 10px}
 
 /* ---------- Avatars and profile picker ---------- */
 .av{display:block;border-radius:50%;overflow:hidden;flex:none}
@@ -237,8 +260,8 @@ label.lbl{display:block;font-size:14px;font-weight:600;color:var(--label2);margi
   .topbar-inner{padding:12px 16px}
 }
 @media (prefers-reduced-motion: reduce){
-  .wave1,.wave2,#phone.complete,#jar.complete,.who .av{animation:none}
-  #liq,#jarLiq{transition-duration:.01s}
+  #phone.complete,#jar.complete,#ipad.complete,.who .av,.tw{animation:none}
+  #liq,#ipadLiq,#jarLiq{transition-duration:.01s}
 }
 </style>
 </head>
@@ -250,6 +273,27 @@ label.lbl{display:block;font-size:14px;font-weight:600;color:var(--label2);margi
   <linearGradient id="gLiquid" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5ac8fa"/><stop offset=".45" stop-color="#007aff"/><stop offset="1" stop-color="#af52de"/></linearGradient>
   <linearGradient id="gLiquidJar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb3d9"/><stop offset=".5" stop-color="#ff6fb5"/><stop offset="1" stop-color="#a855f7"/></linearGradient>
   <linearGradient id="gShine" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset=".38" stop-color="#fff" stop-opacity=".04"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient>
+  <linearGradient id="gPileShade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".22" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".38"/></linearGradient>
+  <g id="bill">
+    <rect x="0" y="0" width="84" height="32" rx="3.5" fill="#8fcb7b" stroke="#3f7d3a" stroke-width="1.6"/>
+    <rect x="3.6" y="3.6" width="76.8" height="24.8" rx="2" fill="none" stroke="#dff2d3" stroke-width="1" opacity=".9"/>
+    <ellipse cx="42" cy="16" rx="10.5" ry="11" fill="#6fb25f" stroke="#dff2d3" stroke-width="1.2"/>
+    <circle cx="42" cy="12.8" r="3.7" fill="#dff2d3"/><path d="M34.6 24 Q42 16.5 49.4 24Z" fill="#dff2d3"/>
+    <circle cx="12" cy="16" r="5.6" fill="#6fb25f" stroke="#dff2d3" stroke-width="1"/>
+    <circle cx="72" cy="16" r="5.6" fill="#6fb25f" stroke="#dff2d3" stroke-width="1"/>
+    <text x="12" y="19" font-size="8.5" font-weight="800" text-anchor="middle" fill="#f1fbe9" font-family="Georgia,serif">1</text>
+    <text x="72" y="19" font-size="8.5" font-weight="800" text-anchor="middle" fill="#f1fbe9" font-family="Georgia,serif">1</text>
+  </g>
+  <g id="bill2">
+    <rect x="0" y="0" width="84" height="32" rx="3.5" fill="#7dbd69" stroke="#356f33" stroke-width="1.6"/>
+    <rect x="3.6" y="3.6" width="76.8" height="24.8" rx="2" fill="none" stroke="#d3ecc5" stroke-width="1" opacity=".85"/>
+    <ellipse cx="42" cy="16" rx="10.5" ry="11" fill="#5fa352" stroke="#d3ecc5" stroke-width="1.2"/>
+    <circle cx="42" cy="12.8" r="3.7" fill="#d3ecc5"/><path d="M34.6 24 Q42 16.5 49.4 24Z" fill="#d3ecc5"/>
+    <circle cx="12" cy="16" r="5.6" fill="#5fa352" stroke="#d3ecc5" stroke-width="1"/>
+    <circle cx="72" cy="16" r="5.6" fill="#5fa352" stroke="#d3ecc5" stroke-width="1"/>
+    <text x="12" y="19" font-size="8.5" font-weight="800" text-anchor="middle" fill="#eef9e6" font-family="Georgia,serif">1</text>
+    <text x="72" y="19" font-size="8.5" font-weight="800" text-anchor="middle" fill="#eef9e6" font-family="Georgia,serif">1</text>
+  </g>
 </defs></svg>
 <div id="gate" class="gate" hidden></div>
 <div id="picker" class="picker" hidden></div>
@@ -270,7 +314,7 @@ label.lbl{display:block;font-size:14px;font-weight:600;color:var(--label2);margi
   <main>
     <section class="hero" aria-label="Progress">
       <div class="phone-wrap">
-        <svg id="phone" viewBox="-6 -2 212 404" role="img" aria-label="An iPhone that fills up as money is saved">
+        <svg id="phone" viewBox="-6 -2 212 404" role="img" aria-label="An iPhone that fills up with dollar bills as money is saved">
           <defs><clipPath id="screenClip"><rect x="12" y="12" width="176" height="376" rx="30"/></clipPath></defs>
           <rect x="-3" y="86" width="3" height="30" rx="1.5" fill="#8d8f98"/>
           <rect x="-3" y="130" width="3" height="52" rx="1.5" fill="#8d8f98"/>
@@ -280,32 +324,47 @@ label.lbl{display:block;font-size:14px;font-weight:600;color:var(--label2);margi
           <rect x="4" y="4" width="192" height="392" rx="40" fill="#0b0b0e"/>
           <g clip-path="url(#screenClip)">
             <rect x="12" y="12" width="176" height="376" fill="url(#gIdle)"/>
-            <g id="liq" style="transform:translateY(388px)">
-              <g transform="translate(12,0)">
-                <g class="wave2"><path d="M0 8 Q22 0 44 8 T88 8 T132 8 T176 8 T220 8 T264 8 T308 8 T352 8 T396 8 T440 8 V440 H0 Z" fill="url(#gLiquid)" opacity=".5"/></g>
-                <g class="wave1" transform="translate(0,5)"><path d="M0 8 Q22 0 44 8 T88 8 T132 8 T176 8 T220 8 T264 8 T308 8 T352 8 T396 8 T440 8 V440 H0 Z" fill="url(#gLiquid)"/></g>
-              </g>
-            </g>
+            <g id="liq"></g>
+            <g id="phoneDrops"></g>
             <rect x="12" y="12" width="176" height="376" fill="url(#gShine)"/>
-            <text id="phonePct" x="100" y="206" text-anchor="middle" font-size="46" font-weight="800" fill="#fff"
-              style="font-family:ui-rounded,-apple-system,Helvetica,sans-serif;paint-order:stroke" stroke="rgba(0,0,0,.25)" stroke-width="4">0%</text>
-            <text id="phoneLbl" x="100" y="232" text-anchor="middle" font-size="13" font-weight="600" fill="#fff" opacity=".9"
+            <rect x="34" y="168" width="132" height="76" rx="24" fill="rgba(0,0,0,.4)"/>
+            <text id="phonePct" x="100" y="206" text-anchor="middle" font-size="44" font-weight="800" fill="#fff"
+              style="font-family:ui-rounded,-apple-system,Helvetica,sans-serif">0%</text>
+            <text x="100" y="231" text-anchor="middle" font-size="13" font-weight="600" fill="#fff" opacity=".9"
               style="font-family:-apple-system,Helvetica,sans-serif">saved</text>
           </g>
           <rect x="68" y="22" width="64" height="19" rx="9.5" fill="#000"/>
           <rect x="72" y="378" width="56" height="4" rx="2" fill="#fff" opacity=".75"/>
         </svg>
-        <svg id="jar" viewBox="-6 -2 212 404" role="img" aria-label="A jar that fills up as money is saved" hidden>
+
+        <svg id="ipad" viewBox="-6 -4 272 354" role="img" aria-label="An iPad that fills up with dollar bills as money is saved" hidden>
+          <defs><clipPath id="ipadClip"><rect x="14" y="14" width="232" height="318" rx="12"/></clipPath></defs>
+          <rect x="196" y="-3" width="30" height="3" rx="1.5" fill="#8d8f98"/>
+          <rect x="260" y="44" width="3" height="26" rx="1.5" fill="#8d8f98"/>
+          <rect x="260" y="78" width="3" height="26" rx="1.5" fill="#8d8f98"/>
+          <rect x="0" y="0" width="260" height="346" rx="28" fill="url(#gFrame)"/>
+          <rect x="3.5" y="3.5" width="253" height="339" rx="24.5" fill="#0b0b0e"/>
+          <g clip-path="url(#ipadClip)">
+            <rect x="14" y="14" width="232" height="318" fill="url(#gIdle)"/>
+            <g id="ipadLiq"></g>
+            <g id="ipadDrops"></g>
+            <rect x="14" y="14" width="232" height="318" fill="url(#gShine)"/>
+            <rect x="64" y="140" width="132" height="76" rx="24" fill="rgba(0,0,0,.4)"/>
+            <text id="ipadPct" x="130" y="178" text-anchor="middle" font-size="44" font-weight="800" fill="#fff"
+              style="font-family:ui-rounded,-apple-system,Helvetica,sans-serif">0%</text>
+            <text x="130" y="203" text-anchor="middle" font-size="13" font-weight="600" fill="#fff" opacity=".9"
+              style="font-family:-apple-system,Helvetica,sans-serif">saved</text>
+          </g>
+          <circle cx="130" cy="8.5" r="2.4" fill="#2a2a30"/>
+        </svg>
+
+        <svg id="jar" viewBox="-6 -2 212 404" role="img" aria-label="A jar that fills up with dollar bills as money is saved" hidden>
           <defs><clipPath id="jarClip"><path d="M56 96H144Q172 96 172 124V338Q172 378 132 378H68Q28 378 28 338V124Q28 96 56 96Z"/></clipPath></defs>
           <ellipse cx="100" cy="392" rx="82" ry="8" fill="rgba(0,0,0,.14)"/>
           <path d="M56 96H144Q172 96 172 124V338Q172 378 132 378H68Q28 378 28 338V124Q28 96 56 96Z" style="fill:var(--fill)"/>
           <g clip-path="url(#jarClip)">
-            <g id="jarLiq" style="transform:translateY(378px)">
-              <g transform="translate(28,0)">
-                <g class="wave2"><path d="M0 8 Q22 0 44 8 T88 8 T132 8 T176 8 T220 8 T264 8 T308 8 T352 8 T396 8 T440 8 V440 H0 Z" fill="url(#gLiquidJar)" opacity=".5"/></g>
-                <g class="wave1" transform="translate(0,5)"><path d="M0 8 Q22 0 44 8 T88 8 T132 8 T176 8 T220 8 T264 8 T308 8 T352 8 T396 8 T440 8 V440 H0 Z" fill="url(#gLiquidJar)"/></g>
-              </g>
-            </g>
+            <g id="jarLiq"></g>
+            <g id="jarDrops"></g>
             <rect x="42" y="116" width="12" height="190" rx="6" fill="#fff" opacity=".3"/>
             <circle cx="48" cy="326" r="6" fill="#fff" opacity=".3"/>
           </g>
@@ -314,10 +373,11 @@ label.lbl{display:block;font-size:14px;font-weight:600;color:var(--label2);margi
           <rect x="40" y="44" width="120" height="42" rx="14" fill="#e0a458"/>
           <rect x="40" y="44" width="120" height="14" rx="7" fill="#f3c27e"/>
           <path d="M62 62V82M82 62V82M102 62V82M122 62V82M142 62V82" stroke="rgba(0,0,0,.12)" stroke-width="4" stroke-linecap="round"/>
+          <rect x="34" y="208" width="132" height="76" rx="24" fill="rgba(0,0,0,.4)"/>
           <text id="jarPct" x="100" y="246" text-anchor="middle" font-size="42" font-weight="800" fill="#fff"
-            style="font-family:ui-rounded,-apple-system,Helvetica,sans-serif;paint-order:stroke" stroke="rgba(0,0,0,.28)" stroke-width="4">0%</text>
-          <text x="100" y="272" text-anchor="middle" font-size="13" font-weight="700" fill="#fff" stroke="rgba(0,0,0,.25)" stroke-width="3"
-            style="font-family:-apple-system,Helvetica,sans-serif;paint-order:stroke">saved</text>
+            style="font-family:ui-rounded,-apple-system,Helvetica,sans-serif">0%</text>
+          <text x="100" y="271" text-anchor="middle" font-size="13" font-weight="700" fill="#fff"
+            style="font-family:-apple-system,Helvetica,sans-serif">saved</text>
         </svg>
       </div>
 
@@ -340,6 +400,12 @@ label.lbl{display:block;font-size:14px;font-weight:600;color:var(--label2);margi
       <div class="jobs" id="jobs"></div>
     </section>
 
+    <section id="badgeSection" hidden>
+      <h2>Streaks &amp; badges</h2>
+      <p class="sub">Do the same job again and again to earn badges!</p>
+      <div class="badges" id="badges"></div>
+    </section>
+
     <section>
       <h2>Recent</h2>
       <div class="list" id="recent"></div>
@@ -360,7 +426,7 @@ label.lbl{display:block;font-size:14px;font-weight:600;color:var(--label2);margi
    SETUP: paste the Web app URL from your Apps Script deployment here.
    ===================================================================== */
 const CONFIG = {
-  API_URL: 'https://script.google.com/macros/s/AKfycbyQLhaaXcMMLx4yr9E3FtiwpXsHSK-57KAmFv-qZtOYfH91P5pIAW6NQNGsHIy-JjHISg/exec'
+  API_URL: 'PASTE_YOUR_WEB_APP_URL_HERE'
 };
 
 /* ---------- tiny helpers ---------- */
@@ -638,42 +704,85 @@ function animateNumber(el, from, to, fmt, dur = 1500){
 /* ---------- rendering ---------- */
 const goalOf = () => S.state.settings.goalAmount;
 const tokenCount = () => (S.state && S.state.tokens) || 0;
+const SVGNS = 'http://www.w3.org/2000/svg';
+function svgEl(tag, attrs){ const e = document.createElementNS(SVGNS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; }
+function setHidden(el, hide){ if (hide) el.setAttribute('hidden', ''); else el.removeAttribute('hidden'); } // SVG elements have no .hidden property
+const rand = (a, b) => a + Math.random() * (b - a);
+
+// y0 = group offset when empty, span = how far it rises when full, top = screen top, x0/w = screen left edge and width
+const VESSELS = {
+  phone: { svg: 'phone', liq: 'liq',     drops: 'phoneDrops', pct: 'phonePct', y0: 404, span: 404, top: 12, x0: 12, w: 176 },
+  ipad:  { svg: 'ipad',  liq: 'ipadLiq', drops: 'ipadDrops',  pct: 'ipadPct',  y0: 348, span: 346, top: 14, x0: 14, w: 232 },
+  jar:   { svg: 'jar',   liq: 'jarLiq',  drops: 'jarDrops',   pct: 'jarPct',   y0: 394, span: 310, top: 96, x0: 28, w: 144 }
+};
+// A stack of $1 bills: patterned body plus a few tilted bills poking out of the top.
+function buildPiles(){
+  Object.values(VESSELS).forEach(v => {
+    const inner = svgEl('g', { transform: `translate(${v.x0},0)` });
+    inner.append(svgEl('rect', { x: -12, y: 10, width: v.w + 24, height: 420, fill: '#3b7636' }));
+    const rows = Math.ceil(420 / 33);
+    for (let r = 0; r < rows; r++) {
+      const off = r % 2 ? -42 : 0;
+      for (let x = off - 84, c = 0; x < v.w + 84; x += 84, c++) {
+        inner.append(svgEl('use', { href: (r + c) % 2 ? '#bill2' : '#bill', x: x, y: 10 + r * 33 }));
+      }
+    }
+    inner.append(svgEl('rect', { x: -12, y: 10, width: v.w + 24, height: 420, fill: 'url(#gPileShade)' }));
+    const n = Math.max(2, Math.round(v.w / 58)), step = v.w / n, rots = [-7, 5, -3, 6, -5], dys = [-9, -14, -7, -13, -10];
+    for (let i = 0; i < n; i++) {
+      inner.append(svgEl('use', { href: '#bill', transform: `translate(${(step * (i + .5) - 42).toFixed(1)},${dys[i % 5]}) rotate(${rots[i % 5]} 42 16)` }));
+    }
+    const g = $('#' + v.liq); g.replaceChildren(inner); g.style.transform = `translateY(${v.y0}px)`;
+  });
+}
+const currentShape = () => (S.state && VESSELS[S.state.settings.goalShape]) ? S.state.settings.goalShape : 'phone';
 function resetLiquid(){
-  [['liq', 388], ['jarLiq', 378]].forEach(([id, y]) => {
-    const el = $('#' + id); el.style.transition = 'none'; el.style.transform = `translateY(${y}px)`;
+  Object.values(VESSELS).forEach(v => {
+    const el = $('#' + v.liq); el.style.transition = 'none'; el.style.transform = `translateY(${v.y0}px)`;
     void el.getBoundingClientRect(); el.style.transition = '';
   });
+}
+// A handful of bills fall into the pile when money is added.
+function dropBills(){
+  if (reduced() || !S.state) return;
+  const v = VESSELS[currentShape()], layer = $('#' + v.drops);
+  const p = Math.min(1, S.state.total / goalOf()), pileTop = v.y0 - v.span * Math.max(p, .02);
+  const start = v.top - 26, fall = Math.max(50, pileTop - 8 - start - 22);
+  for (let i = 0; i < 8; i++) {
+    const g = svgEl('g', { class: 'fallbill', style: `animation-delay:${i * 110}ms;--fall:${Math.round(fall)}px` });
+    g.append(svgEl('use', { href: '#bill', transform: `translate(${(v.x0 + rand(6, v.w - 74)).toFixed(1)},${start}) rotate(${rand(-35, 35).toFixed(0)} 42 16) scale(.8)` }));
+    layer.append(g); setTimeout(() => g.remove(), 2400);
+  }
 }
 function renderHero(){
   const st = S.state, goal = goalOf(), total = st.total, p = Math.min(1, total / goal);
   const name = (st.profile && st.profile.name) || st.settings.childName;
-  if (S.shownTotal == null) resetLiquid(); // fresh profile: start from an empty phone/jar
-  const jar = st.settings.goalShape === 'jar';
-  $('#phone').hidden = jar; $('#jar').hidden = !jar;
+  if (S.shownTotal == null) resetLiquid(); // fresh profile: start from an empty phone / iPad / jar
+  const shape = currentShape();
+  Object.entries(VESSELS).forEach(([k, v]) => {
+    setHidden($('#' + v.svg), k !== shape);
+    $('#' + v.svg).classList.toggle('complete', k === shape && total >= goal);
+  });
   $('#title').textContent = `${name}’s ${st.settings.goalName} fund`;
   $('#topAv').replaceChildren(avatarEl(st.profile && st.profile.avatar, 44, name));
   $('#savedLabel').textContent = 'Saved so far';
   const from = S.shownTotal == null ? 0 : S.shownTotal;
   animateNumber($('#money'), from, total, money);
   const pctFmt = v => (v > 0 && v < 10 ? (Math.round(v * 10) / 10) : Math.floor(v + 1e-9)) + '%';
-  animateNumber($('#phonePct'), S.shownPct, p * 100, pctFmt);
-  animateNumber($('#jarPct'), S.shownPct, p * 100, pctFmt);
+  Object.values(VESSELS).forEach(v => animateNumber($('#' + v.pct), S.shownPct, p * 100, pctFmt));
   S.shownTotal = total; S.shownPct = p * 100;
 
   const left = Math.max(0, goal - total);
   $('#togo').textContent = left > 0 ? `${money(left)} to go` : `Goal reached! 🎉`;
   $('#weekAmt').textContent = money(st.weekTotal);
   $('#jobCount').textContent = st.count.toLocaleString('en-AU');
-  $('#phone').classList.toggle('complete', total >= goal);
-  $('#jar').classList.toggle('complete', total >= goal);
   const tk = tokenCount();
   $('#tokChip').textContent = tk;
   $('#tokBadge').textContent = tk; $('#tokBadge').hidden = tk < 1;
 
   requestAnimationFrame(() => requestAnimationFrame(() => {
-    const shown = total > 0 ? Math.max(p, .02) : 0; // always show a little water once they've earned something
-    $('#liq').style.transform = `translateY(${388 - 392 * shown}px)`;
-    $('#jarLiq').style.transform = `translateY(${378 - 302 * shown}px)`;
+    const shown = total > 0 ? Math.max(p, .03) : 0; // always show a few bills once they've earned something
+    Object.values(VESSELS).forEach(v => { $('#' + v.liq).style.transform = `translateY(${v.y0 - v.span * shown}px)`; });
   }));
 
   const miles = $('#miles'); miles.replaceChildren();
@@ -693,6 +802,7 @@ function freqLabel(j){
 function renderJobs(){
   const box = $('#jobs'); box.replaceChildren();
   const jobs = activeJobs(), counts = S.state.periodCounts || S.state.todayCounts || {};
+  const streaks = {}; (S.state.badges || []).forEach(b => { streaks[b.jobId] = b; });
   const sub = $('#jobsSub');
   if (!jobs.length) {
     sub.textContent = '';
@@ -705,17 +815,124 @@ function renderJobs(){
     ? `${waiting} job${waiting === 1 ? '' : 's'} waiting · ${money(Math.round(upForGrabs * 100) / 100)} up for grabs. Finished one? Tap it.`
     : 'All done for now. Nice work!';
   jobs.forEach(j => {
-    const n = counts[j.id] || 0, done = n >= j.limit, p = PERIOD[j.period] || PERIOD.day;
+    const n = counts[j.id] || 0, done = n >= j.limit, p = PERIOD[j.period] || PERIOD.day, sk = streaks[j.id];
     const label = done ? p[1] : (j.limit > 1 ? `${n} of ${j.limit} ${p[0]}` : (j.period === 'day' ? '' : p[2]));
+    const fire = sk && sk.current >= 2 ? h('span', { class: 'fire', title: 'Streak' }, `🔥 ${sk.current}`) : null;
     const b = h('button', { class: 'job' + (done ? ' done' : ''), style: `--h:${hue(j.id)}`, disabled: done,
-      'aria-label': `${j.name}, ${money(j.value)}${done ? ', ' + p[1].toLowerCase() : ''}`, onClick: () => openConfirm(j) },
-      h('div', { class: 'bubble' }, j.emoji),
+      'aria-label': `${j.name}, ${money(j.value)}${done ? ', ' + p[1].toLowerCase() : ''}${sk && sk.current >= 2 ? ', ' + sk.current + ' in a row' : ''}`, onClick: () => openConfirm(j) },
+      h('div', { class: 'brow' }, h('div', { class: 'bubble' }, j.emoji), fire),
       h('div', { class: 'name' }, j.name),
       h('div', { class: 'row' }, h('span', { class: 'amt-pill' }, '+' + money(j.value)), h('span', { class: 'today' }, label)),
       done ? h('div', { class: 'check', 'aria-hidden': 'true' }, '✓') : null);
     box.append(b);
   });
 }
+
+/* ---------- streak badges ---------- */
+const TIER = [
+  null,
+  { name: 'Bronze',  ring: ['#f3b784', '#8a5226'], hi: '#ffe3c8' },
+  { name: 'Silver',  ring: ['#f6f8fb', '#8a95a6'], hi: '#ffffff' },
+  { name: 'Gold',    ring: ['#ffe680', '#d09000'], hi: '#fff6c9' },
+  { name: 'Diamond', ring: ['#cdf7ff', '#8b7cff'], hi: '#ffffff' }
+];
+const BADGE_TITLES = [
+  [/\bcar\b|vehicle/i, 'Car Wash Pro'],
+  [/\bbins?\b|rubbish|trash|garbage|recycl/i, 'Bin Boss'],
+  [/dishwasher|dish|plates|cutlery/i, 'Dish Dynamo'],
+  [/\bdog\b|walk/i, 'Top Dog'],
+  [/laundry|washing|clothes|fold/i, 'Laundry Legend'],
+  [/lawn|mow|garden|weed/i, 'Lawn Lord'],
+  [/\bbed\b/i, 'Bed Boss'],
+  [/table/i, 'Table Pro'],
+  [/plant|water/i, 'Plant Whisperer'],
+  [/room|tidy|clean|vacuum|sweep|mop/i, 'Tidy Titan'],
+  [/dinner|cook|meal|kitchen|lunch/i, 'Chef’s Hero'],
+  [/\bcat\b|\bpet|feed|fish|chook|chicken/i, 'Pet Pal'],
+  [/homework|read|study|practi[cs]e|piano/i, 'Brain Boss']
+];
+function badgeTitle(name){ for (const [re, t] of BADGE_TITLES) if (re.test(name || '')) return t; return 'Streak Star'; }
+const esc = x => String(x == null ? '' : x).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function hsl2hex(h, sat, lig){ // plain #rrggbb so every renderer agrees on the colour
+  sat /= 100; lig /= 100;
+  const k = n => (n + h / 30) % 12, a = sat * Math.min(lig, 1 - lig);
+  const f = n => Math.round(255 * (lig - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1))))).toString(16).padStart(2, '0');
+  return '#' + f(0) + f(8) + f(4);
+}
+let badgeSeq = 0;
+// A medal on a ribbon: tier colours the rim, the job's own colour and emoji fill the middle, and the banner carries a title that fits the job.
+function badgeSVG(job, tier, streak){
+  const id = 'bd' + (++badgeSeq), locked = tier < 1, T = TIER[Math.max(1, tier)], hh = hue(job.id), h2 = (hh + 28) % 360;
+  const r0 = locked ? '#dde1e7' : T.ring[0], r1 = locked ? '#aeb5c0' : T.ring[1];
+  const i0 = locked ? '#e9ecf0' : `${hsl2hex(hh, 88, 62)}`, i1 = locked ? '#d2d7de' : `${hsl2hex(h2, 82, 40)}`;
+  const rawTitle = locked ? 'Locked' : badgeTitle(job.name), title = esc(rawTitle);
+  const tsize = rawTitle.length <= 9 ? 12.5 : rawTitle.length <= 12 ? 11 : 10;
+  const tfit = rawTitle.length * tsize * .6 > 92 ? 'textLength="92" lengthAdjust="spacingAndGlyphs"' : '';
+  const rays = locked ? '' : Array.from({ length: 10 }, (_, k) => `<path d="M60 68 L${(60 + 60 * Math.cos(k * Math.PI / 5 - .15)).toFixed(1)} ${(68 + 60 * Math.sin(k * Math.PI / 5 - .15)).toFixed(1)} L${(60 + 60 * Math.cos(k * Math.PI / 5 + .15)).toFixed(1)} ${(68 + 60 * Math.sin(k * Math.PI / 5 + .15)).toFixed(1)}Z" fill="#fff" opacity=".1"/>`).join('');
+  const stars = locked ? '' : `<text x="60" y="101" text-anchor="middle" font-size="12" fill="${T.hi}" stroke="rgba(0,0,0,.25)" stroke-width=".6" letter-spacing="1">${'★'.repeat(tier)}</text>`;
+  const sparkle = tier >= 3 ? ['M14 58 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z', 'M104 84 l1.6 4 4 1.6 -4 1.6 -1.6 4 -1.6 -4 -4 -1.6 4 -1.6z', 'M22 100 l1.4 3.4 3.4 1.4 -3.4 1.4 -1.4 3.4 -1.4 -3.4 -3.4 -1.4 3.4 -1.4z']
+    .map((d, k) => `<path class="tw" style="animation-delay:${k * .6}s" d="${d}" fill="#fff" stroke="${T.ring[1]}" stroke-width=".6"/>`).join('') : '';
+  const chip = streak > 0 && !locked ? `<circle cx="100" cy="30" r="14" fill="#ff7a1a" stroke="#fff" stroke-width="2.5"/><text x="100" y="35.5" text-anchor="middle" font-size="15" font-weight="800" fill="#fff" font-family="ui-rounded,-apple-system,sans-serif">${streak}</text>` : '';
+  return `<svg class="badge-svg" viewBox="0 0 120 142" role="img" aria-label="${esc(locked ? 'Locked badge' : badgeTitle(job.name) + ', ' + T.name + ' badge')}">
+<defs><linearGradient id="${id}r" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${r0}"/><stop offset="1" stop-color="${r1}"/></linearGradient>
+<linearGradient id="${id}i" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${i0}"/><stop offset="1" stop-color="${i1}"/></linearGradient>
+<clipPath id="${id}c"><circle cx="60" cy="68" r="36"/></clipPath></defs>
+<path d="M32 0 L62 40 L50 46 L20 6Z" fill="${locked ? '#c3c9d2' : `${hsl2hex(hh, 72, 48)}`}"/>
+<path d="M88 0 L58 40 L70 46 L100 6Z" fill="${locked ? '#aab1bc' : `${hsl2hex(h2, 72, 36)}`}"/>
+<circle cx="60" cy="68" r="46" fill="url(#${id}r)"/>
+<circle cx="60" cy="68" r="40.5" fill="none" stroke="${locked ? '#fff' : T.hi}" stroke-opacity=".75" stroke-width="1.5"/>
+<circle cx="60" cy="68" r="36" fill="url(#${id}i)"/>
+<g clip-path="url(#${id}c)">${rays}<ellipse cx="44" cy="48" rx="30" ry="15" fill="#fff" opacity="${locked ? .35 : .24}" transform="rotate(-28 44 48)"/></g>
+<text x="60" y="${locked ? 84 : 82}" text-anchor="middle" font-size="38" ${locked ? 'opacity=".28"' : ''}>${locked ? '🔒' : esc(job.emoji)}</text>
+${stars}
+<path d="M5 108 H115 L108.5 120 L115 132 H5 L11.5 120Z" fill="${locked ? '#aab1bc' : `${hsl2hex(hh, 66, 26)}`}"/>
+<path d="M5 108 H115 L113.2 111.2 H6.8Z" fill="#fff" opacity=".18"/>
+<text x="60" y="124.6" text-anchor="middle" font-size="${tsize}" font-weight="800" fill="#fff" ${tfit} font-family="ui-rounded,-apple-system,Helvetica,sans-serif">${title}</text>
+${sparkle}${chip}</svg>`;
+}
+const UNIT = { day: ['day', 'today'], week: ['week', 'this week'], month: ['month', 'this month'] };
+const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+function badgeCardsData(){
+  const jobs = Object.fromEntries((S.state.jobs || []).map(j => [j.id, j]));
+  return (S.state.badges || []).map(b => ({ b, job: jobs[b.jobId] })).filter(x => x.job);
+}
+function renderBadges(){
+  const box = $('#badges'), items = badgeCardsData();
+  setHidden($('#badgeSection'), !items.length);
+  box.replaceChildren();
+  items.forEach(({ b, job }) => {
+    const u = UNIT[b.unit] || UNIT.day, tiers = (S.state.badgeTiers || {})[b.unit] || [];
+    const line = b.current > 0 ? h('span', {}, h('b', {}, '🔥 ' + plural(b.current, u[0])), ' in a row') : 'Start a streak!';
+    const hint = b.current > 0 && !b.doneNow ? `Do it ${u[1]} to keep it going` : (b.next ? `${plural(Math.max(0, b.next - b.current), u[0])} to ${TIER[b.earned + 1].name}` : 'Top badge earned! 💎');
+    const pct = b.next ? Math.min(100, b.current / b.next * 100) : 100;
+    const card = h('button', { class: 'bcard', 'aria-label': `${job.name} badge. ${b.earned ? TIER[b.earned].name : 'Not earned yet'}. Streak ${b.current}.`, onClick: () => openBadgeSheet(job, b, false) },
+      h('div', { class: 'bs' }), h('div', { class: 'bn' }, job.name), h('div', { class: 'bl' }, line),
+      h('div', { class: 'bar' }, h('i', { style: `width:${pct.toFixed(0)}%` })), h('div', { class: 'bt' }, hint));
+    card.querySelector('.bs').innerHTML = badgeSVG(job, b.earned, b.current);
+    box.append(card);
+  });
+}
+function openBadgeSheet(job, b, isNew){
+  const u = UNIT[b.unit] || UNIT.day, tiers = (S.state.badgeTiers || {})[b.unit] || [];
+  openSheet(body => {
+    const big = h('div', { class: 'bigbadge' });
+    big.innerHTML = badgeSVG(job, b.earned, b.current);
+    const grid = h('div', { class: 'tiers' }, [1, 2, 3, 4].map(t => {
+      const cell = h('div', { class: 't' }, h('div', { class: 'bs' }), h('div', { class: 'tn' }, TIER[t].name), h('div', { class: 'td' }, `${plural(tiers[t - 1], u[0])} in a row`));
+      cell.querySelector('.bs').innerHTML = badgeSVG(job, b.earned >= t ? t : 0, 0);
+      return cell;
+    }));
+    body.append(
+      h('div', { class: 'center' }, isNew ? h('h3', {}, 'New badge! 🎉') : h('h3', {}, badgeTitle(job.name)), big,
+        isNew
+          ? h('p', { class: 'lead' }, `${badgeTitle(job.name)} · ${TIER[b.earned].name}. You did “${job.name}” ${plural(tiers[b.earned - 1], u[0])} in a row!`)
+          : h('p', { class: 'lead' }, b.best > 0 ? `Best streak: ${plural(b.best, u[0])} in a row` : 'Do this job to start a streak')),
+      isNew ? null : grid,
+      h('div', { class: 'stack', style: 'margin-top:14px' }, h('button', { class: 'btn ' + (isNew ? 'primary' : 'plain'), onClick: () => { closeSheet(); if (isNew) setTimeout(offerGame, 400); } }, isNew ? 'Awesome!' : 'Close')));
+  });
+  if (isNew) { fx.celebrate(innerWidth / 2, innerHeight * .45, true); chime(true); }
+}
+
 function renderRecent(){
   const box = $('#recent'); box.replaceChildren();
   const rows = S.state.recent.filter(r => r.status === 'ok').slice(0, 8);
@@ -725,7 +942,7 @@ function renderRecent(){
     h('div', { class: 'txt' }, h('div', { class: 't' }, r.job), h('div', { class: 's' }, when(r.ts))),
     h('div', { class: 'v' }, '+' + money(r.value)))));
 }
-function renderAll(){ renderHero(); renderJobs(); renderRecent(); }
+function renderAll(){ renderHero(); renderJobs(); renderBadges(); renderRecent(); }
 
 /* ---------- sheets ---------- */
 let sheet = null;
@@ -755,7 +972,7 @@ function openConfirm(job){
       unlockAudio();
       yes.disabled = true; yes.textContent = 'Saving…';
       const r0 = yes.getBoundingClientRect(), x = r0.left + r0.width / 2, y = r0.top;
-      const prev = S.state.total;
+      const prev = S.state.total, prevBadges = S.state.badges || [];
       try {
         const r = await api('complete', { jobId: job.id });
         closeSheet();
@@ -763,7 +980,8 @@ function openConfirm(job){
         window.scrollTo({ top: 0, behavior: reduced() ? 'auto' : 'smooth' });
         renderAll();
         celebrate(prev, r.state.total, r.result.value, x, y);
-        setTimeout(offerGame, 3300);
+        dropBills();
+        afterJob(job, prevBadges);
       } catch (e) {
         if (e.state) { S.state = e.state; renderAll(); }
         closeSheet(); toast(errText(e));
@@ -778,8 +996,15 @@ function openConfirm(job){
   });
 }
 
+// After the celebration: a new badge if one was earned, otherwise the bonus game offer.
+function afterJob(job, before){
+  const was = before.find(b => b.jobId === job.id), now = (S.state.badges || []).find(b => b.jobId === job.id);
+  const gained = !!now && now.earned > ((was && was.earned) || 0);
+  setTimeout(() => { if (sheet) return; if (gained) openBadgeSheet(job, now, true); else offerGame(); }, 3300);
+}
+
 const CHEERS = ['Nice work!', 'Cha-ching!', 'Legend!', 'Money in the bank!', 'Crushed it!', 'Another one down!', 'Boom!'];
-const MILES = { 25: 'A quarter of the way there!', 50: 'Halfway to your iPhone!', 75: 'Three quarters done. So close!', 100: 'You did it!' };
+const MILES = { 25: 'A quarter of the way there!', 50: 'Halfway there!', 75: 'Three quarters done. So close!', 100: 'You did it!' };
 function celebrate(prevTotal, newTotal, amount, x, y){
   const goal = goalOf();
   const before = prevTotal / goal * 100, after = newTotal / goal * 100;
@@ -794,7 +1019,7 @@ function openGoalSheet(){
   const st = S.state.settings;
   openSheet(body => body.append(
     h('div', { class: 'center' },
-      h('div', { class: 'big-emoji' }, st.goalShape === 'jar' ? '🎉' : '📱'),
+      h('div', { class: 'big-emoji' }, st.goalShape === 'phone' ? '📱' : '🎉'),
       h('h3', {}, `${st.childName}, you did it!`),
       h('p', { class: 'lead' }, `You reached your ${money(st.goalAmount)} ${st.goalName} goal! Go show a parent!`)),
     h('div', { class: 'stack' }, h('button', { class: 'btn blue', onClick: closeSheet }, 'Awesome!'))), { sticky: true });
@@ -979,12 +1204,14 @@ function jobForm(job){
   const freq = h('select', { class: 'field', 'aria-label': 'How often' }, opts.map(o => h('option', { value: o[0], selected: o[0] === current }, o[1])));
   const active = h('input', { type: 'checkbox', 'aria-label': 'Show this job' });
   active.checked = job ? job.active : true;
+  const streaks = h('input', { type: 'checkbox', 'aria-label': 'Streak badges' });
+  streaks.checked = job ? job.streaks !== false : true;
   const chips = h('div', { class: 'chips-row' }, EMOJIS.map(e => h('button', { type: 'button', class: 'chip', onClick: () => { emoji.value = e; } }, e)));
   const save = h('button', { class: 'btn blue', onClick: async () => {
     const v = parseFloat(value.value);
     if (!name.value.trim() || !(v >= 0)) { A.err = ERR.bad_job; renderAdmin(); return; }
     const [period, limit] = freq.value.split(':');
-    const ok = await adminCall('saveJob', { job: { id: job ? job.id : undefined, emoji: emoji.value, name: name.value, value: v, limit: Number(limit), period, active: active.checked } }, 'Saved');
+    const ok = await adminCall('saveJob', { job: { id: job ? job.id : undefined, emoji: emoji.value, name: name.value, value: v, limit: Number(limit), period, active: active.checked, streaks: streaks.checked } }, 'Saved');
     if (ok) { A.editing = undefined; renderAdmin(); }
   } }, 'Save job');
   const del = job ? h('button', { class: 'btn danger', onClick: async () => {
@@ -999,6 +1226,7 @@ function jobForm(job){
     chips,
     h('div', { class: 'two' }, h('div', {}, h('label', { class: 'lbl' }, 'Amount ($)'), value), h('div', {}, h('label', { class: 'lbl' }, 'How often'), freq)),
     h('label', { class: 'switch' }, h('span', {}, 'Show this job'), active),
+    h('label', { class: 'switch' }, h('span', {}, 'Earn streak badges 🔥'), streaks),
     save,
     h('button', { class: 'btn plain', onClick: () => { A.editing = undefined; A.err = ''; renderAdmin(); } }, 'Cancel'),
     del);
@@ -1017,16 +1245,19 @@ function adminHistory(){
         r.status === 'void' ? 'Restore' : 'Void')))));
 }
 
+const GOAL_PRESETS = { phone: { name: 'iPhone', amount: 1000 }, ipad: { name: 'iPad', amount: 696 } };
 function adminGoal(){
   const s = S.state.settings;
   const child = h('input', { class: 'field', value: s.childName, maxlength: '30', 'aria-label': 'Name' });
   const goal = h('input', { class: 'field', value: s.goalName, maxlength: '30', 'aria-label': 'Goal name' });
   const amt = h('input', { class: 'field', type: 'number', inputmode: 'decimal', min: '1', max: '100000', value: String(s.goalAmount), 'aria-label': 'Goal amount' });
-  const shape = h('select', { class: 'field', 'aria-label': 'Picture' }, [['phone', '📱 iPhone that fills up'], ['jar', '🫙 Jar that fills up']].map(([v, l]) => h('option', { value: v, selected: s.goalShape === v }, l)));
+  const shape = h('select', { class: 'field', 'aria-label': 'Progress picture' }, [['phone', '📱 iPhone ($1,000)'], ['ipad', '📱 iPad ($696)'], ['jar', '🫙 Savings jar']].map(([v, l]) => h('option', { value: v, selected: s.goalShape === v }, l)));
+  shape.addEventListener('change', () => { const p = GOAL_PRESETS[shape.value]; if (p) { goal.value = p.name; amt.value = String(p.amount); } });
   return h('div', { class: 'stack' },
     h('div', {}, h('label', { class: 'lbl' }, 'Name'), child),
+    h('div', {}, h('label', { class: 'lbl' }, 'Goal'), shape),
+    h('p', { class: 'sub', style: 'margin:-4px 0 0' }, 'Choosing the iPhone or iPad fills in its name and price. You can still change them below.'),
     h('div', { class: 'two' }, h('div', {}, h('label', { class: 'lbl' }, 'Saving for'), goal), h('div', {}, h('label', { class: 'lbl' }, 'Goal amount ($)'), amt)),
-    h('div', {}, h('label', { class: 'lbl' }, 'Progress picture'), shape),
     h('button', { class: 'btn blue', onClick: () => adminCall('saveSettings', { settings: { childName: child.value, goalName: goal.value, goalAmount: parseFloat(amt.value), goalShape: shape.value } }, 'Saved') }, 'Save goal'));
 }
 
@@ -1126,6 +1357,7 @@ document.addEventListener('visibilitychange', () => {
   if (hiddenAt && Date.now() - hiddenAt > 5 * 60 * 1000) { toast('Locked. Pick your profile.'); switchProfile(); return; }
   if (S.state && !sheet && Date.now() - S.lastFetch > 15000) refresh(false);
 });
+buildPiles();
 renderSoundBtn();
 boot();
 </script>
